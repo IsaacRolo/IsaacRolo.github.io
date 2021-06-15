@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Redis on Rolo的日常</title>
-    <link>https://https://isaacrolo.github.io/tags/Redis/</link>
+    <link>https://isaacrolo.github.io/tags/Redis/</link>
     <description>Recent content in Redis on Rolo的日常</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Thu, 18 Jul 2019 10:55:08 +0800</lastBuildDate><atom:link href="https://https://isaacrolo.github.io/tags/Redis/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 18 Jul 2019 10:55:08 +0800</lastBuildDate><atom:link href="https://isaacrolo.github.io/tags/Redis/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Redis</title>
-      <link>https://https://isaacrolo.github.io/post/Redis/</link>
+      <link>https://isaacrolo.github.io/post/Redis/</link>
       <pubDate>Thu, 18 Jul 2019 10:55:08 +0800</pubDate>
       
-      <guid>https://https://isaacrolo.github.io/post/Redis/</guid>
+      <guid>https://isaacrolo.github.io/post/Redis/</guid>
       <description>概念 数据类型 String（字符串） string是redis最基本的类型，一个key对应一个value。string类型是Redis最基本的数据类型，一个键最大能存储512MB。 Hash（哈希） List（列表） Set（集合） zset（sorted set：有序集合） 使用场景 作为ses</description>
     </item>
     

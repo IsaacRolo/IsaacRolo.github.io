@@ -2,26 +2,26 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>web on Rolo的日常</title>
-    <link>https://https://isaacrolo.github.io/tags/web/</link>
+    <link>https://isaacrolo.github.io/tags/web/</link>
     <description>Recent content in web on Rolo的日常</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Tue, 06 Aug 2019 16:46:11 +0800</lastBuildDate><atom:link href="https://https://isaacrolo.github.io/tags/web/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 06 Aug 2019 16:46:11 +0800</lastBuildDate><atom:link href="https://isaacrolo.github.io/tags/web/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>如何设计Restful API</title>
-      <link>https://https://isaacrolo.github.io/post/Restful/</link>
+      <link>https://isaacrolo.github.io/post/Restful/</link>
       <pubDate>Tue, 06 Aug 2019 16:46:11 +0800</pubDate>
       
-      <guid>https://https://isaacrolo.github.io/post/Restful/</guid>
+      <guid>https://isaacrolo.github.io/post/Restful/</guid>
       <description>接口设计 组织机构 查询组织机构列表 Get /organization 新增组织机构 Post /organization Content-Type: application/json 1 2 3 4 { &amp;#34;previousOrg&amp;#34;: &amp;#34;xxx&amp;#34;, &amp;#34;orgName&amp;#34;: &amp;#34;xxx&amp;#34; } 修改组织机构 Put /organization/{orgId} 删除组织机构 Delete /organization/{orgId} 配置组织机构的数据权限 Put /organization/{orgId}/dataAuth 1 2 3 { &amp;#34;auth&amp;#34;: [{&amp;#34;organizationName1&amp;#34;:1},{&amp;#34;organizationName2&amp;#34;:0},{},...] } 实际开发中遇到的问题： get和delete请求没有请求体，能否使用@RequestBody来传值？ Restful API 关于批量删除接口怎么设计？ delete /users/1,2,3,4</description>
     </item>
     
     <item>
       <title>Cookie_session</title>
-      <link>https://https://isaacrolo.github.io/post/cookie_session/</link>
+      <link>https://isaacrolo.github.io/post/cookie_session/</link>
       <pubDate>Mon, 20 May 2019 19:30:33 +0800</pubDate>
       
-      <guid>https://https://isaacrolo.github.io/post/cookie_session/</guid>
+      <guid>https://isaacrolo.github.io/post/cookie_session/</guid>
       <description>为什么在2个服务器之间来回请求，同一个服务器的sessionId会找不到 第一次请求【服务器A】 Response Headers Set-Cookie: JSESSIONID=4A8E119166F37F26FF1D8ACF38F9742C;path=/;HttpOnly 第二次请求【服务器B】 Response Headers Set-Cookie: JSESSIONID=1A08F620F659F860BF599FD37A51DCDD;path=/;HttpOnly Request Headers Cookie: JSESSIONID=4A8E119166F37F26FF1D8ACF38F9742C 第三次请求【服务器A】 Response Headers Set-Cookie: JSESSIONID=25F872DEA8145E2A6811ED212038478B;path=/;HttpOnly Request Headers Cookie: JSESSIONID=1A08F620F659F860BF599FD37A51DCDD 服务端找不到cookie中的jsessionid，会创建新的session，并把sessionId存到</description>
     </item>
     

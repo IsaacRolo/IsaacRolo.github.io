@@ -2,62 +2,62 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Database on Rolo的日常</title>
-    <link>https://https://isaacrolo.github.io/categories/Database/</link>
+    <link>https://isaacrolo.github.io/categories/Database/</link>
     <description>Recent content in Database on Rolo的日常</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-CN</language>
-    <lastBuildDate>Wed, 28 Apr 2021 22:02:13 +0800</lastBuildDate><atom:link href="https://https://isaacrolo.github.io/categories/Database/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 28 Apr 2021 22:02:13 +0800</lastBuildDate><atom:link href="https://isaacrolo.github.io/categories/Database/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Mysql索引原理与优化</title>
-      <link>https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/</link>
+      <link>https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/</link>
       <pubDate>Wed, 28 Apr 2021 22:02:13 +0800</pubDate>
       
-      <guid>https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/</guid>
+      <guid>https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/</guid>
       <description>索引分类 Hash索引 对每一行数据，存储引擎对所有的索引列计算一个Hash码 Hash索引的限制： 只包含Hash值和行指针，不存储值，故无法使用覆盖索引 不是按照索引值的顺序排序的，故无法用于排序，范围查询 不支持部分索引匹配查找，联合索引（A，B）不能只匹配其中一列 Hash冲突多次，需</description>
     </item>
     
     <item>
       <title>区块链入门</title>
-      <link>https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/</link>
+      <link>https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/</link>
       <pubDate>Mon, 12 Apr 2021 20:33:13 +0800</pubDate>
       
-      <guid>https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/</guid>
+      <guid>https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/</guid>
       <description>区块链的本质 区块链是一种特殊的分布式数据库 区块链的主要作用是储存信息。任何需要保存的信息，都可以写入区块链，也可以从里面读取，所以它是数据库。 任何人都可以架设服务器，加入区块链网络，成为一个节点。区块链的世界里面，没有中心节点，每个节点都是平等的，都保存着整个数据库。你可以向任何</description>
     </item>
     
     <item>
       <title>高性能 MySQL ｜ MySQL 逻辑架构</title>
-      <link>https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/</link>
+      <link>https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/</link>
       <pubDate>Thu, 11 Feb 2021 21:11:13 +0800</pubDate>
       
-      <guid>https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/</guid>
+      <guid>https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/</guid>
       <description>高性能 MySQL ｜ MySQL 逻辑架构 MySQL 的逻辑架构分为三层,客户端,服务器,存储引擎。 一、逻辑架构 架构图 1.客户端 第一层负责连接管理、授权认证、安全等等。每个客户端的连接都对应着服务器上的一个线程。服务器上维护了一个线程池,避免为每个连接都创建销毁一个线程。当客户端连接到MySQL服务器时,服务器</description>
     </item>
     
     <item>
       <title>高性能 MySQL ｜ Schema 与数据类型优化</title>
-      <link>https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/</link>
+      <link>https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/</link>
       <pubDate>Thu, 11 Feb 2021 21:11:13 +0800</pubDate>
       
-      <guid>https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/</guid>
+      <guid>https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/</guid>
       <description>高性能 MySQL ｜ Schema 与数据类型优化 MySQL 支持的数据类型非常多,选择正确的数据类型至关重要。下面的几个简单原则有助于做出更好的选择。 一、更小的通常更好 一般情况下,应该尽量使用可以正确存储数据的最小数据类型。更小的数据类型通常更快,因为他们占用更少的磁盘,内存和cpu缓存,并且处理时需要的cpu</description>
     </item>
     
     <item>
       <title>高性能 MySQL ｜ 创建高性能的索引</title>
-      <link>https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/</link>
+      <link>https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/</link>
       <pubDate>Thu, 11 Feb 2021 21:11:13 +0800</pubDate>
       
-      <guid>https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/</guid>
+      <guid>https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/</guid>
       <description>高性能 MySQL ｜ 创建高性能的索引 索引对于良好的性能非常关键,尤其是当表中的数据量越来越大时,索引对性能的影响愈发重要。在数据量较小且负载较低时,不恰当的索引对性能的影响可能还不明显,但当数据量逐渐增大时,性能则会急剧下降。 一、索引的类型 1.B+Tree索引 B-Tree索引使用B-Tre</description>
     </item>
     
     <item>
       <title>高性能 MySQL ｜ 查询性能优化</title>
-      <link>https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</link>
+      <link>https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</link>
       <pubDate>Thu, 11 Feb 2021 21:11:13 +0800</pubDate>
       
-      <guid>https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</guid>
+      <guid>https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</guid>
       <description>高性能 MySQL ｜ 查询性能优化 MySQL 查询性能的优化涉及多个方面,其中包括库表结构、建立合理的索引、设计合理的查询。库表结构包括如何设计表之间的关联、表字段的数据类型等。这需要依据具体的场景进行设计。如下我们从数据库的索引和查询语句的设计两个角度介绍如何提高 MySQL 查询性能。 一、为什么查询速度会慢?</description>
     </item>
     
