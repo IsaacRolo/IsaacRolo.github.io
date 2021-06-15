@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+
+    <title>关于防止sql注入的思考 | Rolo的日常</title>
+    <meta property="og:title" content="关于防止sql注入的思考 - Rolo的日常">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-10-30T13:44:55&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-10-30T13:44:55&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,go语言,go语言笔记,飞雪无情,java,android,博客,项目管理,python,软件架构,公众号,小程序">
+    <meta name="description" content="关于防止sql注入的思考">
+        
+    <meta name="author" content="Rolo">
+    <meta property="og:url" content="https://https://isaacrolo.github.io/post/SQLInjection/">
+    <link rel="shortcut icon" href='/isaacrolo.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/douban.css'>
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/other.css'>
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://https://isaacrolo.github.io/">
+                        Rolo的日常
+                    </a>
+                
+                <p class="description">Laziness, Impatience, and Hubris</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="https://https://isaacrolo.github.io/">首页</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/system/" title="知识体系">知识体系</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/archives/" title="归档">归档</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents"></nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">关于防止sql注入的思考</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年10月30日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/isaacrolo.github.io/categories/'></a></span>
+            
+        </div>
+        
+        
+        <div class="post-meta">
+            <span id="busuanzi_container_page_pv">|<span id="busuanzi_value_page_pv"></span><span>
+                    阅读</span></span>
+        </div>
+        
+        
+        <div class="post-content">
+            <p>首先思考以下几个问题</p>
+<ul>
+<li>preparedstatement一定能够防止sql注入吗？</li>
+<li>preparedstatement防止sql注入的原理是什么？</li>
+<li>使用框架【Mybatis,JPA】访问数据库，能防止sql注入吗？是怎样防止的？</li>
+</ul>
+<p>原生JDBC</p>
+<p>使用<code>PreparedStatement</code>代替<code>Statement</code>，使用<strong>参数化查询</strong>代替sql字符串拼接，如</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#998;font-style:italic">//String sql = &#34;SELECT * FROM users WHERE name =&#39;&#34;+ name + &#34;&#39;&#34;;
+</span><span style="color:#998;font-style:italic"></span>String sql <span style="color:#000;font-weight:bold">=</span> <span style="color:#d14">&#34;SELECT * FROM users WHERE name= ? &#34;</span><span style="color:#000;font-weight:bold">;</span>
+PreparedStatement ps <span style="color:#000;font-weight:bold">=</span> connection<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">prepareStatement</span><span style="color:#000;font-weight:bold">(</span>sql<span style="color:#000;font-weight:bold">);</span>
+ps<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">setString</span><span style="color:#000;font-weight:bold">(</span>1<span style="color:#000;font-weight:bold">,</span> name<span style="color:#000;font-weight:bold">);</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>PreparedStatement相较于Statement有以下好处：</p>
+<ul>
+<li>预编译，性能较好</li>
+<li>不用拼接，易编写易读懂</li>
+<li>防止SQL注入，提高安全性</li>
+</ul>
+<p>但是使用PreparedSatement就一定能防止sql注入吗？答案是否定的</p>
+<p>在某些特殊情况下还是会发生sql注入，</p>
+<ul>
+<li>
+<p>使用PreparedSatement的同时，拼接sql</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">String sql <span style="color:#000;font-weight:bold">=</span> <span style="color:#d14">&#34;SELECT * FROM users WHERE name =&#39;&#34;</span><span style="color:#000;font-weight:bold">+</span> name <span style="color:#000;font-weight:bold">+</span> <span style="color:#d14">&#34;&#39;&#34;</span><span style="color:#000;font-weight:bold">;</span>
+PreparedStatement ps <span style="color:#000;font-weight:bold">=</span> connection<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">prepareStatement</span><span style="color:#000;font-weight:bold">(</span>sql<span style="color:#000;font-weight:bold">);</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>使用通配符<code>%</code>作为参数，使用PreparedSatement后发现sql注入成功</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">String sql <span style="color:#000;font-weight:bold">=</span> <span style="color:#d14">&#34;select * from users where name like ?&#34;</span><span style="color:#000;font-weight:bold">;</span>
+st <span style="color:#000;font-weight:bold">=</span> conn<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">prepareStatement</span><span style="color:#000;font-weight:bold">(</span>sql<span style="color:#000;font-weight:bold">);</span>
+<span style="color:#998;font-style:italic">//用户输入的参数包含百分号
+</span><span style="color:#998;font-style:italic"></span>st<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">setString</span><span style="color:#000;font-weight:bold">(</span>1<span style="color:#000;font-weight:bold">,</span> <span style="color:#d14">&#34;%王%&#34;</span> <span style="color:#000;font-weight:bold">+</span> <span style="color:#d14">&#34;%&#34;</span><span style="color:#000;font-weight:bold">);</span>
+System<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">out</span><span style="color:#000;font-weight:bold">.</span><span style="color:#008080">println</span><span style="color:#000;font-weight:bold">(</span>st<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">toString</span><span style="color:#000;font-weight:bold">());</span> <span style="color:#998;font-style:italic">//com.mysql.jdbc.JDBC4PreparedStatement@8543aa: select * from users where name like &#39;%王%%&#39;
+</span></code></pre></td></tr></table>
+</div>
+</div><p>虽然这种SQL注入危害不大，但在表中数据量较多的时候，会进行全表模糊查询，严重情况下会导致DOS【拒绝服务攻击】</p>
+<p>解决方法需要对用户的输入进行过滤，不允许有通配符</p>
+<p>为什么会出现这种情况呢【百分号PreparedStatement不会转义】，这就要看看PreparedSatement防止sql注入的原理了</p>
+</li>
+</ul>
+<p>preparedstatement是如何防止sql注入的？</p>
+<p>之所以PreparedStatement能防止注入，是因为它把单引号转义了，变成了'，这样一来，就无法截断SQL语句，进而无法拼接SQL语句，基本上没有办法注入了。</p>
+<p>如果不用PreparedStatement，又想防止注入，最简单粗暴的办法就是过滤单引号，过滤之后，单纯从SQL的角度，无法进行任何注入。</p>
+<p>Mybatis</p>
+<p>MyBatis 避免了几乎所有的 JDBC 代码和手动设置参数以及获取结果集。</p>
+<p>可以使用简单的 XML 或注解，将原生类型、接口和POJO映射到数据库中的记录。</p>
+<p>先来看看mybatis的基本用法</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#998;font-style:italic">//xml方式
+</span><span style="color:#998;font-style:italic"></span><span style="color:#000;font-weight:bold">public</span> <span style="color:#000;font-weight:bold">interface</span> <span style="color:#458;font-weight:bold">UserMapper</span> <span style="color:#000;font-weight:bold">{</span>
+    User <span style="color:#900;font-weight:bold">getById</span><span style="color:#000;font-weight:bold">(</span><span style="color:#458;font-weight:bold">int</span> id<span style="color:#000;font-weight:bold">);</span>
+<span style="color:#000;font-weight:bold">}</span>
+<span style="color:#000;font-weight:bold">&lt;</span>select id<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#34;getById&#34;</span> resultType<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#34;org.example.User&#34;</span><span style="color:#000;font-weight:bold">&gt;</span>
+	SELECT <span style="color:#000;font-weight:bold">*</span> FROM user WHERE id <span style="color:#000;font-weight:bold">=</span> <span style="color:#a61717;background-color:#e3d2d2">#</span><span style="color:#000;font-weight:bold">{</span>id<span style="color:#000;font-weight:bold">}</span>
+<span style="color:#000;font-weight:bold">&lt;/</span>select<span style="color:#000;font-weight:bold">&gt;</span>
+
+<span style="color:#998;font-style:italic">//注解方式
+</span><span style="color:#998;font-style:italic"></span><span style="color:#000;font-weight:bold">public</span> <span style="color:#000;font-weight:bold">interface</span> <span style="color:#458;font-weight:bold">UserMapper</span> <span style="color:#000;font-weight:bold">{</span>
+    <span style="color:#3c5d5d;font-weight:bold">@Select</span><span style="color:#000;font-weight:bold">(</span><span style="color:#d14">&#34;SELECT * FROM user WHERE id= #{id}&#34;</span><span style="color:#000;font-weight:bold">)</span>
+    User <span style="color:#900;font-weight:bold">getById</span><span style="color:#000;font-weight:bold">(</span><span style="color:#3c5d5d;font-weight:bold">@Param</span><span style="color:#000;font-weight:bold">(</span><span style="color:#d14">&#34;id&#34;</span><span style="color:#000;font-weight:bold">)</span> <span style="color:#458;font-weight:bold">int</span> id<span style="color:#000;font-weight:bold">);</span>
+<span style="color:#000;font-weight:bold">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>Mybatis参数替换使用的是<code>#{}</code>和<code>${}</code></p>
+<ul>
+<li>使用 <code>#{}</code> 语法时，MyBatis 会自动生成 <code>PreparedStatement</code> ，使用参数绑定 (<code>?</code>) 的方式来设置值</li>
+<li>使用 <code>${}</code> 语法时，MyBatis 会直接注入原始字符串，即相当于拼接字符串，因而会导致 SQL 注入</li>
+</ul>
+<p>看一个Mybatis发生sql注入问题的实际例子</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#000080">&lt;select</span> <span style="color:#008080">id=</span><span style="color:#d14">&#34;getUser&#34;</span> <span style="color:#008080">parameterType=</span><span style="color:#d14">&#34;Model&#34;</span> <span style="color:#008080">resultMap=</span><span style="color:#d14">&#34;Map&#34;</span><span style="color:#000080">&gt;</span>
+    select  
+    user.uuid,
+    user.name
+    from user
+    <span style="color:#000080">&lt;where&gt;</span>
+        <span style="color:#000080">&lt;if</span> <span style="color:#008080">test=</span><span style="color:#d14">&#34;name!=null &amp;amp;&amp;amp; name!=&#39;&#39;&#34;</span><span style="color:#000080">&gt;</span>
+            and user.name like &#39;%${name}%&#39;
+        <span style="color:#000080">&lt;/if&gt;</span>	
+    <span style="color:#000080">&lt;/where&gt;</span>
+<span style="color:#000080">&lt;/select&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>由于使用的是${}，相当于拼接sql，将传入的name参数替换为 <code>admin%' or 1 like '</code></p>
+<p>就可以查询到所有用户信息，数据可能会被轻易盗取</p>
+<p>那么是不是 <code>${}</code> 语法就毫无用处了呢？</p>
+<p>举个例子，</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">SELECT <span style="color:#000;font-weight:bold">*</span> FROM user order by <span style="color:#a61717;background-color:#e3d2d2">#</span><span style="color:#000;font-weight:bold">{</span>param<span style="color:#000;font-weight:bold">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>参数替换之后会变成<code>order by &quot;name&quot;</code>，即以字符串来排序而非字段</p>
+<p>这时候就需要使用 <code>${}</code> 语法了，但是需要自行过滤参数来防止sql注入，如：限制 param允许的值，只能为 <code>name</code>, <code>id</code>等字段</p>
+<p>JPA</p>
+<p>spring data jpa的基本用法有以下2种，都使用了参数绑定</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">9
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#000;font-weight:bold">public</span> <span style="color:#000;font-weight:bold">interface</span> <span style="color:#458;font-weight:bold">UserRepository</span> <span style="color:#000;font-weight:bold">extends</span> JpaRepository<span style="color:#000;font-weight:bold">&lt;</span>User<span style="color:#000;font-weight:bold">,</span> Long<span style="color:#000;font-weight:bold">&gt;</span> <span style="color:#000;font-weight:bold">{</span>
+  <span style="color:#998;font-style:italic">//注解默认写法
+</span><span style="color:#998;font-style:italic"></span>  <span style="color:#3c5d5d;font-weight:bold">@Query</span><span style="color:#000;font-weight:bold">(</span><span style="color:#d14">&#34;select u from User u where u.emailAddress = ?1&#34;</span><span style="color:#000;font-weight:bold">)</span>
+  User <span style="color:#900;font-weight:bold">findByEmailAddress</span><span style="color:#000;font-weight:bold">(</span>String emailAddress<span style="color:#000;font-weight:bold">);</span>
+  <span style="color:#998;font-style:italic">//使用命名参数
+</span><span style="color:#998;font-style:italic"></span>  <span style="color:#3c5d5d;font-weight:bold">@Query</span><span style="color:#000;font-weight:bold">(</span><span style="color:#d14">&#34;select u from User u where u.firstname = :firstname or u.lastname = :lastname&#34;</span><span style="color:#000;font-weight:bold">)</span>
+  User <span style="color:#900;font-weight:bold">findByLastnameOrFirstname</span><span style="color:#000;font-weight:bold">(</span><span style="color:#3c5d5d;font-weight:bold">@Param</span><span style="color:#000;font-weight:bold">(</span><span style="color:#d14">&#34;lastname&#34;</span><span style="color:#000;font-weight:bold">)</span> String lastname<span style="color:#000;font-weight:bold">,</span>
+                                 <span style="color:#3c5d5d;font-weight:bold">@Param</span><span style="color:#000;font-weight:bold">(</span><span style="color:#d14">&#34;firstname&#34;</span><span style="color:#000;font-weight:bold">)</span> String firstname<span style="color:#000;font-weight:bold">);</span>
+<span style="color:#000;font-weight:bold">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>如果不使用参数绑定，而是拼接sql，如</p>
+<p><code>String sql = &quot;select * from user where name = '&quot; + name + &quot;'&quot;;</code></p>
+<p>也会导致sql注入，原理和JDBC相同</p>
+<p><a href="https://www.cnblogs.com/iyangyuan/p/4809494.html">https://www.cnblogs.com/iyangyuan/p/4809494.html</a></p>
+<p><a href="https://b1ngz.github.io/java-sql-injection-note/">https://b1ngz.github.io/java-sql-injection-note/</a></p>
+<p><a href="https://docs.spring.io/spring-data/jpa/docs/2.2.0.RELEASE/reference/html/#jpa.query-methods">https://docs.spring.io/spring-data/jpa/docs/2.2.0.RELEASE/reference/html/#jpa.query-methods</a></p>
+
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="https://https://isaacrolo.github.io/">Rolo</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="https://https://isaacrolo.github.io/post/SQLInjection/">https://https://isaacrolo.github.io/post/SQLInjection/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/isaacrolo.github.io/post/Hadoop/">Hadoop</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/Vimium/">不用鼠标玩耍Chrome</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/java8/">关于lambda表达式和Stream API的思考</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/Restful/">如何设计Restful API</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/Redis/">Redis</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/isaacrolo.github.io/tags/'></a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://https://isaacrolo.github.io/">Rolo的日常 By Rolo</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/isaacrolo.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+    <script type="text/javascript" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+
+
+
+    <script src='/isaacrolo.github.io/js/douban.js'></script>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='https://https:/isaacrolo.github.io/search/' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://https://isaacrolo.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/" title="Mysql索引原理与优化">Mysql索引原理与优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/" title="区块链入门">区块链入门</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/work-tips/" title="一份工作中最重要的5个要素">一份工作中最重要的5个要素</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/" title="高性能 MySQL ｜ MySQL 逻辑架构">高性能 MySQL ｜ MySQL 逻辑架构</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ Schema 与数据类型优化">高性能 MySQL ｜ Schema 与数据类型优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/" title="高性能 MySQL ｜ 创建高性能的索引">高性能 MySQL ｜ 创建高性能的索引</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ 查询性能优化">高性能 MySQL ｜ 查询性能优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/16s/" title="魅族16s使用半年有感">魅族16s使用半年有感</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/SQLInjection/" title="关于防止sql注入的思考">关于防止sql注入的思考</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Hadoop/" title="Hadoop">Hadoop</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Database/">Database (6)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Spring-Cloud/">Spring Cloud (2)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/web/">web (1)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://https://isaacrolo.github.io/tags/BlockChain/">BlockChain</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Elasticsearch/">Elasticsearch</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Java/">Java</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/MySQL/">MySQL </a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Redis/">Redis</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Boot/">Spring Boot</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Cloud/">Spring Cloud</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Tableau/">Tableau</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/web/">web</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E7%BD%91%E7%BB%9C/">网络</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://https:/isaacrolo.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

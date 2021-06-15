@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+
+    <title>高性能 MySQL ｜ Schema 与数据类型优化 | Rolo的日常</title>
+    <meta property="og:title" content="高性能 MySQL ｜ Schema 与数据类型优化 - Rolo的日常">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-02-11T21:11:13&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-02-11T21:11:13&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,go语言,go语言笔记,飞雪无情,java,android,博客,项目管理,python,软件架构,公众号,小程序">
+    <meta name="description" content="高性能 MySQL ｜ Schema 与数据类型优化">
+        
+    <meta name="author" content="Rolo">
+    <meta property="og:url" content="https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/">
+    <link rel="shortcut icon" href='/isaacrolo.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/douban.css'>
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/other.css'>
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://https://isaacrolo.github.io/">
+                        Rolo的日常
+                    </a>
+                
+                <p class="description">Laziness, Impatience, and Hubris</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="https://https://isaacrolo.github.io/">首页</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/system/" title="知识体系">知识体系</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/archives/" title="归档">归档</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#一更小的通常更好">一、更小的通常更好</a></li>
+    <li><a href="#二简单就好">二、简单就好</a></li>
+    <li><a href="#三mysql很难优化包含null的列">三、Mysql很难优化包含NULL的列</a></li>
+    <li><a href="#四选择优化的数据类型">四、选择优化的数据类型</a>
+      <ul>
+        <li><a href="#1整数类型">1.整数类型</a></li>
+        <li><a href="#2实数类型">2.实数类型</a></li>
+        <li><a href="#3字符串类型">3.字符串类型</a></li>
+        <li><a href="#4日期和时间类型">4.日期和时间类型</a></li>
+        <li><a href="#5位数据类型">5.位数据类型</a></li>
+        <li><a href="#6选择标识符identifier">6.选择标识符（identifier）</a></li>
+        <li><a href="#7特殊类型数据">7.特殊类型数据</a></li>
+      </ul>
+    </li>
+    <li><a href="#schema-设计中的陷阱">Schema 设计中的陷阱</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+    <li><a href="#五范式和反范式">五、范式和反范式</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+    <li><a href="#六缓存表和汇总表">六、缓存表和汇总表</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">高性能 MySQL ｜ Schema 与数据类型优化</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年2月11日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/isaacrolo.github.io/categories/Database'>Database</a></span>
+            
+        </div>
+        
+        
+        <div class="post-meta">
+            <span id="busuanzi_container_page_pv">|<span id="busuanzi_value_page_pv"></span><span>
+                    阅读</span></span>
+        </div>
+        
+        
+        <div class="post-content">
+            <h1 id="高性能-mysql--schema-与数据类型优化">高性能 MySQL ｜ Schema 与数据类型优化</h1>
+<p>MySQL 支持的数据类型非常多,选择正确的数据类型至关重要。下面的几个简单原则有助于做出更好的选择。</p>
+<h2 id="一更小的通常更好">一、更小的通常更好</h2>
+<p>一般情况下,应该尽量使用可以正确存储数据的最小数据类型。更小的数据类型通常更快,因为他们占用更少的磁盘,内存和cpu缓存,并且处理时需要的cpu周期也更少。</p>
+<h2 id="二简单就好">二、简单就好</h2>
+<p>简单的数据类型操作通常需要更少的cpu周期。例如,整型比字符操作代价更低,因为字符集和校对规则（排序规则）使字符比较比整型更加复杂。注：应使用mysql内建的类型存储时间和日期,而不是字符串。</p>
+<h2 id="三mysql很难优化包含null的列">三、Mysql很难优化包含NULL的列</h2>
+<ul>
+<li>可为NULL的列使得索引、索引统计和值比较都更复杂</li>
+<li>可为NULL的列会使用更多的存储空间</li>
+<li>当可为NULL的列被索引时,每个索引记录需要一个额外的字节</li>
+</ul>
+<blockquote>
+<p>通常把可为NULL的列改为NOT NULL带来的性能提升比较小,所以（调优时）没有必要首先在现有schema中查找并修改掉这种情况,除非确定这会导致问题。但是,如果计划在列上建索引,就应该尽量避免设计成可为NULL的列。</p>
+</blockquote>
+<h2 id="四选择优化的数据类型">四、选择优化的数据类型</h2>
+<h3 id="1整数类型">1.整数类型</h3>
+<h4 id="无符号">无符号</h4>
+<ul>
+<li>UNSIGNED</li>
+</ul>
+<h4 id="有符号">有符号</h4>
+<ul>
+<li>BIGINT</li>
+<li>INT</li>
+<li>MEDIUMINT</li>
+<li>SMALLINT</li>
+<li>TINYINT</li>
+</ul>
+<h3 id="2实数类型">2.实数类型</h3>
+<h4 id="float">FLOAT</h4>
+<h4 id="double">DOUBLE</h4>
+<h4 id="decimal">DECIMAL</h4>
+<p>因为CPU不支持对DECIMAL的直接计算,所以在MySQL 5.0以及更高版本中,MySQL服务器自身实现了DECIMAL的高精度计算。相对而言,CPU直接支持原生浮点计算,所以浮点运算明显更快。</p>
+<blockquote>
+<p>因为需要额外的空间和计算开销,所以应该尽量只在对小数进行精确计算时才使用DECIMAL——例如存储财务数据。但在数据量比较大的时候,可以考虑使用BIGINT代替DECIMAL,将需要存储的货币单位根据小数的位数乘以相应的倍数即可。假设要存储财务数据精确到万分之一分,则可以把所有金额乘以一百万,然后将结果存储在BIGINT里,这样可以同时避免浮点存储计算不精确和DECIMAL精确计算代价高的问题。</p>
+</blockquote>
+<h3 id="3字符串类型">3.字符串类型</h3>
+<h4 id="varchar">VARCHAR</h4>
+<p>VARCHAR类型用于存储可变长字符串,是最常见的字符串数据类型。它比定长类型更节省</p>
+<ul>
+<li>需要使用1或2个额外字节记录字符串的长
+<ul>
+<li>如果列的最大长度小于或等于255字节,只使用1个字节表示</li>
+<li>否则使用2个字节。</li>
+</ul>
+</li>
+<li>UPDATE时InnoDB可能分裂页,MyISAM会将行拆成不同的片段存储</li>
+<li>面这些情况下使用VARCHAR是合适的
+<ul>
+<li>字符串列的最大长度比平均长度大很多</li>
+<li>列的更新很少,所以碎片不是问题</li>
+<li>在5.0或者更高版本,MySQL在存储和检索时会保留末尾空格。但在4.1或更老的版本,MySQL会剔除末尾空格。</li>
+</ul>
+</li>
+</ul>
+<h4 id="char">CHAR</h4>
+<ul>
+<li>对于经常变更的数据,CHAR也比VARCHAR更好,因为定长的CHAR类型不容易产生碎片</li>
+<li>CHAR适合存储很短的字符串</li>
+<li>对于非常短的列,CHAR比VARCHAR在存储空间上也更有效率(因为VARCHAR还有一或两个记录长度的额外字节。)</li>
+</ul>
+<blockquote>
+<p>使用VARCHAR（5）和VARCHAR（200）存储’hello’的空间开销是一样的。那么使用更短的列有什么优势吗？事实证明有很大的优势。更长的列会消耗更多的内存,因为MySQL通常会分配固定大小的内存块来保存内部值。尤其是使用内存临时表进行排序或操作时会特别糟糕。在利用磁盘临时表进行排序时也同样糟糕。</p>
+</blockquote>
+<h4 id="blob">BLOB</h4>
+<p>存储的是二进制数据</p>
+<h4 id="text">TEXT</h4>
+<p>字符集和排序规则</p>
+<blockquote>
+<p>当BLOB和TEXT值太大时,InnoDB会使用专门的“外部”存储区域来进行存储,此时每个值在行内需要1～4个字节存储一个指针,然后在外部存储区域存储实际的值。MySQL不能将BLOB和TEXT列全部长度的字符串进行索引</p>
+</blockquote>
+<h4 id="enum">ENUM</h4>
+<p>MySQL在内部会将每个值在列表中的位置保存为整数,并且在表的.frm文件中保存“数字-字符串”映射关系的“查找表”。</p>
+<ul>
+<li>枚举字段是按照内部存储的整数而不是定义的字符串进行排序的</li>
+<li>由于MySQL把每个枚举值保存为整数,并且必须进行查找才能转换为字符串,所以枚举列有一些开销。</li>
+</ul>
+<h3 id="4日期和时间类型">4.日期和时间类型</h3>
+<h4 id="timestamp">TIMESTAMP</h4>
+<ul>
+<li>从1970年到2038年,精度为秒</li>
+<li>MySQL提供了FROM_UNIXTIME()函数把Unix时间戳转换为日期,并提供了UNIX_TIMESTAMP()函数把日期转换为Unix时间戳。</li>
+<li>4个字节的存储空间</li>
+<li>TIMESTAMP显示的值也依赖于时区。</li>
+<li>TIMESTAMP列默认为NOT NULL,设置这个列的值为当前时间</li>
+</ul>
+<h4 id="datetime">DATETIME</h4>
+<ul>
+<li>从1001年到9999年,精度为秒</li>
+<li>8个字节的存储空间</li>
+<li>与时区无关</li>
+</ul>
+<blockquote>
+<p>如果需要存储比秒更小粒度的日期和时间值怎么办？MySQL目前没有提供合适的数据类型,但是可以使用自己的存储格式：可以使用BIGINT类型存储微秒级别的时间截,或者使用DOUBLE存储秒之后的小数部分。这两种方式都可以,或者也可以使用MariaDB替代MySQL。</p>
+</blockquote>
+<h4 id="timestamp-与-datetime-选择">TIMESTAMP 与 DATETIME 选择</h4>
+<p>TIMESTAMP只使用DATETIME一半的存储空间,并且会根据时区变化,具有特殊的自动更新能力。另一方面,TIMESTAMP允许的时间范围要小得多,有时候它的特殊能力会成为障碍。</p>
+<h3 id="5位数据类型">5.位数据类型</h3>
+<h4 id="bit">BIT</h4>
+<h4 id="set">SET</h4>
+<h3 id="6选择标识符identifier">6.选择标识符（identifier）</h3>
+<h4 id="完全随机的字符串">完全“随机”的字符串</h4>
+<ul>
+<li>因为插入值会随机地写到索引的不同位置,所以使得INSERT语句更慢。这会导致页分裂、磁盘随机访问,以及对于聚簇存储引擎产生聚簇索引碎片。</li>
+<li>SELECT语句会变得更慢,因为逻辑上相邻的行会分布在磁盘和内存的不同地方</li>
+<li>随机值导致缓存对所有类型的查询语句效果都很差,因为会使得缓存赖以工作的访问局部性原理失效。如果整个数据集都一样的“热”,那么缓存任何一部分特定数据到内存都没有好处；如果工作集比内存大,缓存将会有很多刷新和不命中。</li>
+</ul>
+<blockquote>
+<p>UUID()生成的值与加密散列函数例如SHA1()生成的值有不同的特征：UUID值虽然分布也不均匀,但还是有一定顺序,如果存储UUID值,则应该移除“-”符号；</p>
+</blockquote>
+<h3 id="7特殊类型数据">7.特殊类型数据</h3>
+<p>人们经常使用VARCHAR（15）列来存储IP地址。然而,它们实际上是32位无符号整数,不是字符串。用小数点将地址分成四段的表示方法只是为了让人们阅读容易。所以应该用无符号整数存储IP地址。MySQL提供INET_ATON()和INET_NTOA()函数在这两种表示方法之间转换。</p>
+<blockquote>
+<p>良好的schema设计原则是普遍适用的,但MySQL有它自己的实现细节要注意。概括来说,尽可能保持任何东西小而简单总是好的。MySQL喜欢简单,需要使用数据库的人应该也同样会喜欢简单的原则：尽量避免过度设计,例如会导致极其复杂查询的schema设计,或者有很多列的表设计（很多的意思是介于有点多和非常多之间）。使用小而简单的合适数据类型,除非真实数据模型中有确切的需要,否则应该尽可能地避免使用NULL值。尽量使用相同的数据类型存储相似或相关的值,尤其是要在关联条件中使用的列。注意可变长字符串,其在临时表和排序时可能导致悲观的按最大长度分配内存。尽量使用整型定义标识列。避免使用MySQL已经遗弃的特性,例如指定浮点数的精度,或者整数的显示宽度。小心使用ENUM和SET。虽然它们用起来很方便,但是不要滥用,否则有时候会变成陷阱。最好避免使用BIT。</p>
+</blockquote>
+<h2 id="schema-设计中的陷阱">Schema 设计中的陷阱</h2>
+<p>虽然有一些普遍的好或坏的设计原则,但也有一些问题是由MySQL的实现机制导致的,这意味着有可能犯一些只在MySQL下发生的特定错误。本节我们讨论设计MySQL的schema的问题。这也许会帮助你避免这些错误,并且选择在MySQL特定实现下工作得更好的替代方案。</p>
+<h4 id="太多的列">太多的列</h4>
+<p>MySQL的存储引擎API工作时需要在服务器层和存储引擎层之间通过行缓冲格式拷贝数据,然后在服务器层将缓冲内容解码成各个列。从行缓冲中将编码过的列转换成行数据结构的操作代价是非常高的。MyISAM的定长行结构实际上与服务器层的行结构正好匹配,所以不需要转换。然而,MyISAM的变长行结构和InnoDB的行结构则总是需要转换。转换的代价依赖于列的数量。当我们研究一个CPU占用非常高的案例时,发现客户使用了非常宽的表（数千个字段）,然而只有一小部分列会实际用到,这时转换的代价就非常高。如果计划使用数千个字段,必须意识到服务器的性能运行特征会有一些不同。</p>
+<h4 id="太多的关联">太多的关联</h4>
+<p>所谓的“实体-属性-值”（EAV）设计模式是一个常见的糟糕设计模式,尤其是在MySQL下不能靠谱地工作。MySQL限制了每个关联操作最多只能有61张表,但是EAV数据库需要许多自关联。我们见过不少EAV数据库最后超过了这个限制。事实上在许多关联少于61张表的情况下,解析和优化查询的代价也会成为MySQL的问题。一个粗略的经验法则,如果希望查询执行得快速且并发性好,单个查询最好在12个表以内做关联。</p>
+<h4 id="全能的枚举">全能的枚举</h4>
+<p>注意防止过度使用枚举（ENUM）。下面是我们见过的一个例子：</p>
+<pre><code>CREATE TABLE ... (       	country enum('','0','1','2',...,'31')
+</code></pre><p>这种模式的schema设计非常凌乱。这么使用枚举值类型也许在任何支持枚举类型的数据库都是一个有问题的设计方案,这里应该用整数作为外键关联到字典表或者查找表来查找具体值。但是在MySQL中,当需要在枚举列表中增加一个新的国家时就要做一次ALTER TABLE操作。在MySQL 5.0以及更早的版本中ALTER TABLE是一种阻塞操作；即使在5.1和更新版本中,如果不是在列表的末尾增加值也会一样需要ALTER TABLE。</p>
+<h4 id="变相的枚举">变相的枚举</h4>
+<p>枚举（ENUM）列允许在列中存储一组定义值中的单个值,集合（SET）列则允许在列中存储一组定义值中的一个或多个值。有时候这可能比较容易导致混乱。这是一个例子：</p>
+<pre><code>CREATE TABLE ... (       	is_default set ('Y','N') NOT NULL default 'N'
+</code></pre><h4 id="非此发明not-invent-here的null">非此发明（Not Invent Here）的NULL</h4>
+<p>我们之前写了避免使用NULL的好处,并且建议尽可能地考虑替代方案。即使需要存储一个事实上的“空值”到表中时,也不一定非得使用NULL。也许可以使用0、某个特殊值,或者空字符串作为代替</p>
+<h2 id="五范式和反范式">五、范式和反范式</h2>
+<p>对于任何给定的数据通常都有很多种表示方法,从完全的范式化到完全的反范式化,以及两者的折中。在范式化的数据库中,每个事实数据会出现并且只出现一次。相反,在反范式化的数据库中,信息是冗余的,可能会存储在多个地方。</p>
+<h4 id="1范式的优点和缺点">1.范式的优点和缺点</h4>
+<h5 id="范式化通常能够带来好处">范式化通常能够带来好处</h5>
+<ul>
+<li>范式化的更新操作通常比反范式化要快。</li>
+<li>当数据较好地范式化时,就只有很少或者没有重复数据,所以只需要修改更少的数据。</li>
+<li>范式化的表通常更小,可以更好地放在内存里,所以执行操作会更快。</li>
+<li>很少有多余的数据意味着检索列表数据时更少需要DISTINCT或者GROUP BY语句。还是前面的例子：在非范式化的结构中必须使用DISTINCT或者GROUP BY才能获得一份唯一的部门列表,但是如果部门（DEPARTMENT）是一张单独的表,则只需要简单的查询这张表就行了。</li>
+</ul>
+<h5 id="范式化设计的schema的缺点">范式化设计的schema的缺点</h5>
+<p>通常需要关联。</p>
+<h5 id="反范式的优点和缺点">反范式的优点和缺点</h5>
+<p>反范式化的schema因为所有数据都在一张表中,可以很好地避免关联。 如果不需要关联表,则对大部分查询最差的情况——即使表没有使用索引——是全表扫描。当数据比内存大时这可能比关联要快得多,因为这样避免了随机 I/O 。</p>
+<h4 id="2混用范式化和反范式化">2.混用范式化和反范式化</h4>
+<p>事实是,完全的范式化和完全的反范式化schema都是实验室里才有的东西：在真实世界中很少会这么极端地使用。在实际应用中经常需要混用,可能使用部分范式化的schema、缓存表,以及其他技巧。</p>
+<p>最常见的反范式化数据的方法是复制或者缓存,在不同的表中存储相同的特定列。在MySQL 5.0和更新版本中,可以使用触发器更新缓存值,这使得实现这样的方案变得更简单。</p>
+<h2 id="六缓存表和汇总表">六、缓存表和汇总表</h2>
+<h4 id="1物化视图">1.物化视图</h4>
+<p><strong>TODO</strong></p>
+<h4 id="2计数器表">2.计数器表</h4>
+<p><strong>TODO</strong></p>
+<h4 id="3加快alter-table操作的速度">3.加快ALTER TABLE操作的速度</h4>
+<h5 id="只修改frm文件">只修改.frm文件</h5>
+<p><strong>下面这些操作是有可能不需要重建表的</strong></p>
+<ul>
+<li>移除（不是增加）一个列的AUTO_INCREMENT属性。</li>
+<li>增加、移除,或更改ENUM和SET常量。如果移除的是已经有行数据用到其值的常量,查询将会返回一个空字串值。</li>
+</ul>
+<p><strong>修改方法</strong></p>
+<ol>
+<li>创建一张有相同结构的空表,并进行所需要的修改（例如增加ENUM常量）。</li>
+<li>执行<code>FLUSH TABLES WITH READ LOCK</code>。这将会关闭所有正在使用的表,并且禁止任何表被打开。</li>
+<li>交换.frm文件</li>
+<li>执行<code>UNLOCK TABLES</code>来释放第2步的读锁</li>
+</ol>
+<blockquote>
+<p><a href="https://www.ulovecode.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/">https://www.ulovecode.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/</a></p>
+</blockquote>
+
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="https://https://isaacrolo.github.io/">Rolo</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/">https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/">高性能 MySQL ｜ MySQL 逻辑架构</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/">高性能 MySQL ｜ 创建高性能的索引</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">高性能 MySQL ｜ 查询性能优化</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/16s/">魅族16s使用半年有感</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/SQLInjection/">关于防止sql注入的思考</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/isaacrolo.github.io/tags/MySQL'>MySQL </a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://https://isaacrolo.github.io/">Rolo的日常 By Rolo</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/isaacrolo.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+    <script type="text/javascript" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+
+
+
+    <script src='/isaacrolo.github.io/js/douban.js'></script>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='https://https:/isaacrolo.github.io/search/' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://https://isaacrolo.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/" title="Mysql索引原理与优化">Mysql索引原理与优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/" title="区块链入门">区块链入门</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/work-tips/" title="一份工作中最重要的5个要素">一份工作中最重要的5个要素</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/" title="高性能 MySQL ｜ MySQL 逻辑架构">高性能 MySQL ｜ MySQL 逻辑架构</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ Schema 与数据类型优化">高性能 MySQL ｜ Schema 与数据类型优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/" title="高性能 MySQL ｜ 创建高性能的索引">高性能 MySQL ｜ 创建高性能的索引</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ 查询性能优化">高性能 MySQL ｜ 查询性能优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/16s/" title="魅族16s使用半年有感">魅族16s使用半年有感</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/SQLInjection/" title="关于防止sql注入的思考">关于防止sql注入的思考</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Hadoop/" title="Hadoop">Hadoop</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Database/">Database (6)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Spring-Cloud/">Spring Cloud (2)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/web/">web (1)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://https://isaacrolo.github.io/tags/BlockChain/">BlockChain</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Elasticsearch/">Elasticsearch</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Java/">Java</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/MySQL/">MySQL </a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Redis/">Redis</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Boot/">Spring Boot</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Cloud/">Spring Cloud</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Tableau/">Tableau</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/web/">web</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E7%BD%91%E7%BB%9C/">网络</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://https:/isaacrolo.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

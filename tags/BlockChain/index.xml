@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>BlockChain on Rolo的日常</title>
+    <link>https://https://isaacrolo.github.io/tags/BlockChain/</link>
+    <description>Recent content in BlockChain on Rolo的日常</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Mon, 12 Apr 2021 20:33:13 +0800</lastBuildDate><atom:link href="https://https://isaacrolo.github.io/tags/BlockChain/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>区块链入门</title>
+      <link>https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/</link>
+      <pubDate>Mon, 12 Apr 2021 20:33:13 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/</guid>
+      <description>区块链的本质 区块链是一种特殊的分布式数据库 区块链的主要作用是储存信息。任何需要保存的信息，都可以写入区块链，也可以从里面读取，所以它是数据库。 任何人都可以架设服务器，加入区块链网络，成为一个节点。区块链的世界里面，没有中心节点，每个节点都是平等的，都保存着整个数据库。你可以向任何</description>
+    </item>
+    
+  </channel>
+</rss>

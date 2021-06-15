@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+
+    <title>区块链入门 | Rolo的日常</title>
+    <meta property="og:title" content="区块链入门 - Rolo的日常">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-04-12T20:33:13&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-04-12T20:33:13&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,go语言,go语言笔记,飞雪无情,java,android,博客,项目管理,python,软件架构,公众号,小程序">
+    <meta name="description" content="区块链入门">
+        
+    <meta name="author" content="Rolo">
+    <meta property="og:url" content="https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/">
+    <link rel="shortcut icon" href='/isaacrolo.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/douban.css'>
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/other.css'>
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://https://isaacrolo.github.io/">
+                        Rolo的日常
+                    </a>
+                
+                <p class="description">Laziness, Impatience, and Hubris</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="https://https://isaacrolo.github.io/">首页</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/system/" title="知识体系">知识体系</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/archives/" title="归档">归档</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#区块链的本质">区块链的本质</a></li>
+    <li><a href="#区块链特点">区块链特点</a></li>
+    <li><a href="#概念">概念</a></li>
+    <li><a href="#场景">场景</a>
+      <ul>
+        <li><a href="#存证上链">存证（上链）</a></li>
+        <li><a href="#取证">取证</a></li>
+        <li><a href="#核验">核验</a></li>
+      </ul>
+    </li>
+    <li><a href="#参考">参考</a></li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">区块链入门</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年4月12日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/isaacrolo.github.io/categories/Database'>Database</a></span>
+            
+        </div>
+        
+        
+        <div class="post-meta">
+            <span id="busuanzi_container_page_pv">|<span id="busuanzi_value_page_pv"></span><span>
+                    阅读</span></span>
+        </div>
+        
+        
+        <div class="post-content">
+            <h2 id="区块链的本质">区块链的本质</h2>
+<p>
+        <img class="mx-auto" alt="" src="https://files.catbox.moe/b6f2dv.png" />   
+    </p>
+<p>区块链是一种<strong>特殊</strong>的分布式数据库</p>
+<ul>
+<li>区块链的主要作用是储存信息。任何需要保存的信息，都可以写入区块链，也可以从里面读取，所以它是数据库。</li>
+<li>任何人都可以架设服务器，加入区块链网络，成为一个节点。区块链的世界里面，没有中心节点，每个节点都是平等的，都保存着整个数据库。你可以向任何一个节点，写入/读取数据，因为所有节点最后都会同步，保证区块链一致。</li>
+</ul>
+<h2 id="区块链特点">区块链特点</h2>
+<ul>
+<li>去中心化：所有节点最后都会同步，保证区块链一致</li>
+<li>数据可信，防篡改：区块头存储上一个区块的Hash</li>
+</ul>
+<h2 id="概念">概念</h2>
+<ul>
+<li>
+<p>节点：区块链网络中的一个节点，每个节点都保存了所有的区块链</p>
+</li>
+<li>
+<p>区块</p>
+<ul>
+<li>
+<p>区块头</p>
+<p>包含当前区块的多项特征值</p>
+<ul>
+<li>生成时间</li>
+<li>实际数据（即区块体）的哈希</li>
+<li>上一个区块的哈希</li>
+<li>&hellip;</li>
+</ul>
+</li>
+<li>
+<p>区块体</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Hash：计算机可以对任意内容，计算出一个长度相同的特征值，只要原始内容不同，对应的哈希一定（概率极低）不同</p>
+</li>
+<li>
+<p>区块的不可修改性</p>
+<ul>
+<li>
+<p>修改当前区块 -&gt; 当前区块的Hash会改变 -&gt; 链上的下一个区块找不到当前区块（区块头存放上一个区块的哈希） -&gt;  当前区块脱离链</p>
+</li>
+<li>
+<p>同时修改多个区块的内容不可能发生，除非有人掌握了全网51%以上的计算能力</p>
+</li>
+</ul>
+</li>
+<li>
+<p>新增区块的速度</p>
+<p>设计者故意让添加新区块，变得困难，为了缓解<strong>添加区块</strong>和<strong>同步区块</strong>之间的冲突</p>
+</li>
+<li>
+<p>计算Hash的难度系数</p>
+<p>只有满足条件的哈希才会被区块链接受。这个条件特别苛刻，使得绝大部分哈希都不满足要求，必须重算。</p>
+</li>
+<li>
+<p>区块链的分叉</p>
+<ul>
+<li>两个人同时向区块链写入数据，同时有两个区块加入，因为它们都连着前一个区块，就形成了分叉</li>
+<li>规则：新节点总是采用最长的那条区块链，拥有大多数计算能力的那条分支，就是正宗的区块链</li>
+</ul>
+</li>
+</ul>
+<h2 id="场景">场景</h2>
+<p>将数据（文件）存到区块链上，达到防篡改、可追溯及数据来源可信任的目的</p>
+<blockquote>
+<p>区块链取证采用文件与哈希值分离的方式，链上只保存文件的哈希值，原文件保存在链下。可实现对证据真实性的快速核验</p>
+</blockquote>
+<h3 id="存证上链">存证（上链）</h3>
+<p>将文件或结构化数据的哈希值存在区块链上，未来可对该文件进行核验。保证数据不可篡改性，一旦篡改将会暴露。</p>
+<h3 id="取证">取证</h3>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">params:	存证凭据（交易哈希）<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#000080">response</span>:<span style="color:#bbb"> </span>内容哈希  <span style="color:#bbb">
+</span></code></pre></td></tr></table>
+</div>
+</div><h3 id="核验">核验</h3>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml">params:	存证凭据（交易哈希），内容哈希<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#000080">response</span>:<span style="color:#bbb"> </span>是否核验成功 <span style="color:#bbb">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>使用该文件或修改该文件前，先去区块链上核验一下哈希值是否相同，确认该文件没有被篡改过。</p>
+<h2 id="参考">参考</h2>
+<ul>
+<li><a href="https://www.ruanyifeng.com/blog/2017/12/blockchain-tutorial.html">https://www.ruanyifeng.com/blog/2017/12/blockchain-tutorial.html</a></li>
+<li><a href="https://cloud.tencent.com/document/product/1259/48524">https://cloud.tencent.com/document/product/1259/48524</a></li>
+</ul>
+
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="https://https://isaacrolo.github.io/">Rolo</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/">https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/isaacrolo.github.io/post/work-tips/">一份工作中最重要的5个要素</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/">高性能 MySQL ｜ MySQL 逻辑架构</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/">高性能 MySQL ｜ Schema 与数据类型优化</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/">高性能 MySQL ｜ 创建高性能的索引</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">高性能 MySQL ｜ 查询性能优化</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/isaacrolo.github.io/tags/BlockChain'>BlockChain</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://https://isaacrolo.github.io/">Rolo的日常 By Rolo</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/isaacrolo.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+    <script type="text/javascript" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+
+
+
+    <script src='/isaacrolo.github.io/js/douban.js'></script>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='https://https:/isaacrolo.github.io/search/' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://https://isaacrolo.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/" title="Mysql索引原理与优化">Mysql索引原理与优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/" title="区块链入门">区块链入门</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/work-tips/" title="一份工作中最重要的5个要素">一份工作中最重要的5个要素</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/" title="高性能 MySQL ｜ MySQL 逻辑架构">高性能 MySQL ｜ MySQL 逻辑架构</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ Schema 与数据类型优化">高性能 MySQL ｜ Schema 与数据类型优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/" title="高性能 MySQL ｜ 创建高性能的索引">高性能 MySQL ｜ 创建高性能的索引</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ 查询性能优化">高性能 MySQL ｜ 查询性能优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/16s/" title="魅族16s使用半年有感">魅族16s使用半年有感</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/SQLInjection/" title="关于防止sql注入的思考">关于防止sql注入的思考</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Hadoop/" title="Hadoop">Hadoop</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Database/">Database (6)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Spring-Cloud/">Spring Cloud (2)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/web/">web (1)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://https://isaacrolo.github.io/tags/BlockChain/">BlockChain</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Elasticsearch/">Elasticsearch</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Java/">Java</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/MySQL/">MySQL </a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Redis/">Redis</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Boot/">Spring Boot</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Cloud/">Spring Cloud</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Tableau/">Tableau</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/web/">web</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E7%BD%91%E7%BB%9C/">网络</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://https:/isaacrolo.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

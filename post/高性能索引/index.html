@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+
+    <title>高性能 MySQL ｜ 创建高性能的索引 | Rolo的日常</title>
+    <meta property="og:title" content="高性能 MySQL ｜ 创建高性能的索引 - Rolo的日常">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-02-11T21:11:13&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-02-11T21:11:13&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,go语言,go语言笔记,飞雪无情,java,android,博客,项目管理,python,软件架构,公众号,小程序">
+    <meta name="description" content="高性能 MySQL ｜ 创建高性能的索引">
+        
+    <meta name="author" content="Rolo">
+    <meta property="og:url" content="https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/">
+    <link rel="shortcut icon" href='/isaacrolo.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/douban.css'>
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/other.css'>
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://https://isaacrolo.github.io/">
+                        Rolo的日常
+                    </a>
+                
+                <p class="description">Laziness, Impatience, and Hubris</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="https://https://isaacrolo.github.io/">首页</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/system/" title="知识体系">知识体系</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/archives/" title="归档">归档</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#一索引的类型">一、索引的类型</a>
+      <ul>
+        <li><a href="#1btree索引">1.B+Tree索引</a></li>
+        <li><a href="#2哈希索引">2.哈希索引</a></li>
+        <li><a href="#3空间数据索引r-tree">3.空间数据索引（R-Tree）</a></li>
+        <li><a href="#4全文索引">4.全文索引</a></li>
+        <li><a href="#5其他索引类别">5.其他索引类别</a></li>
+      </ul>
+    </li>
+    <li><a href="#二高性能的索引策略">二、高性能的索引策略</a>
+      <ul>
+        <li><a href="#1前缀索引和索引选择性">1.前缀索引和索引选择性</a></li>
+        <li><a href="#2选择合适的索引列顺序">2.选择合适的索引列顺序</a></li>
+        <li><a href="#3innodb和myisam的数据分布对比">3.InnoDB和MyISAM的数据分布对比</a></li>
+        <li><a href="#4索引条件推送">4.索引条件推送</a></li>
+        <li><a href="#5使用索引扫描来做排序">5.使用索引扫描来做排序</a></li>
+        <li><a href="#6压缩前缀压缩索引">6.压缩（前缀压缩）索引</a></li>
+        <li><a href="#7冗余和重复索引">7.冗余和重复索引</a></li>
+        <li><a href="#8未使用的索引">8.未使用的索引</a></li>
+        <li><a href="#9索引和锁">9.索引和锁</a></li>
+      </ul>
+    </li>
+    <li><a href="#三索引案例学习">三、索引案例学习</a>
+      <ul>
+        <li><a href="#1支持多种过滤条件">1.支持多种过滤条件</a></li>
+        <li><a href="#2避免多个范围条件">2.避免多个范围条件</a></li>
+        <li><a href="#3优化排序">3.优化排序</a></li>
+      </ul>
+    </li>
+    <li><a href="#四维护索引和表">四、维护索引和表</a>
+      <ul>
+        <li><a href="#1找到并修复损坏的表">1.找到并修复损坏的表</a></li>
+        <li><a href="#2更新索引统计信息">2.更新索引统计信息</a></li>
+      </ul>
+    </li>
+    <li><a href="#五总结">五、总结</a>
+      <ul>
+        <li><a href="#1在选择索引和编写利用这些索引的查询时有如下三个原则">1.在选择索引和编写利用这些索引的查询时,有如下三个原则</a></li>
+        <li><a href="#2如何判断一个系统创建的索引是合理的呢">2.如何判断一个系统创建的索引是合理的呢？</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">高性能 MySQL ｜ 创建高性能的索引</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年2月11日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/isaacrolo.github.io/categories/Database'>Database</a></span>
+            
+        </div>
+        
+        
+        <div class="post-meta">
+            <span id="busuanzi_container_page_pv">|<span id="busuanzi_value_page_pv"></span><span>
+                    阅读</span></span>
+        </div>
+        
+        
+        <div class="post-content">
+            <h1 id="高性能-mysql--创建高性能的索引">高性能 MySQL ｜ 创建高性能的索引</h1>
+<p>索引对于良好的性能非常关键,尤其是当表中的数据量越来越大时,索引对性能的影响愈发重要。在数据量较小且负载较低时,不恰当的索引对性能的影响可能还不明显,但当数据量逐渐增大时,性能则会急剧下降。</p>
+<h2 id="一索引的类型">一、索引的类型</h2>
+<h3 id="1btree索引">1.B+Tree索引</h3>
+<p>B-Tree索引使用B-Tree来存储数据,当然不同存储引擎的实现方式不同。B-Tree通常意味着所有的值都是按顺序存储的,并且每一个叶子页到根的距离相同。</p>
+<h4 id="索引特点">索引特点</h4>
+<ul>
+<li>叶子节点比较特别,它们的指针指向的是被索引的数据</li>
+<li>B-Tree通常意味着所有的值都是按顺序存储的</li>
+<li>每一个叶子页到根的距离相同</li>
+</ul>
+<h4 id="适用范围">适用范围</h4>
+<ul>
+<li>全值匹配</li>
+<li>匹配最左前缀</li>
+<li>匹配列前缀</li>
+<li>匹配范围值</li>
+<li>精确匹配某一列并范围匹配另外一列</li>
+<li>只访问索引的查询</li>
+</ul>
+<h4 id="b-tree索引的限制">B-Tree索引的限制</h4>
+<ul>
+<li>如果不是按照索引的最左列开始查找,则无法使用索引。例如上面例子中的索引无法用于查找名字为Bill的人,也无法查找某个特定生日的人,因为这两列都不是最左数据列。类似地,也无法查找姓氏以某个字母结尾的人。</li>
+<li>不能跳过索引中的列。也就是说,前面所述的索引无法用于查找姓为Smith并且在某个特定日期出生的人。如果不指定名（first_name）,则MySQL只能使用索引的第一列。</li>
+<li>如果查询中有某个列的范围查询,则其右边所有列都无法使用索引优化查找。例如有查询WHERE last_name=’Smith’ AND frst_name LIKE ‘J％’ AND dob=’1976-12-23’,这个查询只能使用索引的前两列,因为这里LIKE是一个范围条件（但是服务器可以把其余列用于其他目的）。如果范围查询列值的数量有限,那么可以通过使用多个等于条件来代替范围条件。在本章的索引案例学习部分,我们将演示一个详细的案例。</li>
+</ul>
+<h3 id="2哈希索引">2.哈希索引</h3>
+<p>哈希索引（hash index）基于哈希表实现,只有精确匹配索引所有列的查询才有效(4)。对于每一行数据,存储引擎都会对所有的索引列计算一个哈希码（hash code）,哈希码是一个较小的值,并且不同键值的行计算出来的哈希码也不一样。哈希索引将所有的哈希码存储在索引中,同时在哈希表中保存指向每个数据行的指针。</p>
+<h4 id="使用范围">使用范围</h4>
+<p>只有精确匹配索引所有列的查询才有效</p>
+<h4 id="哈希索引的限制">哈希索引的限制</h4>
+<ul>
+<li>哈希索引只包含哈希值和行指针,而不存储字段值,所以不能使用索引中的值来避免读取行。不过,访问内存中的行的速度很快,所以大部分情况下这一点对性能的影响并不明显。</li>
+<li>哈希索引数据并不是按照索引值顺序存储的,所以也就无法用于排序。</li>
+<li>哈希索引也不支持部分索引列匹配查找,因为哈希索引始终是使用索引列的全部内容来计算哈希值的。例如,在数据列（A,B）上建立哈希索引,如果查询只有数据列A,则无法使用该索引。</li>
+<li>哈希索引只支持等值比较查询,包括=、IN()、&lt;=&gt;（注意&lt;&gt;和&lt;=&gt;是不同的操作）。也不支持任何范围查询,例如WHERE price&gt;100。</li>
+<li>访问哈希索引的数据非常快,除非有很多哈希冲突（不同的索引列值却有相同的哈希值）。当出现哈希冲突的时候,存储引擎必须遍历链表中所有的行指针,逐行进行比较,直到找到所有符合条件的行。</li>
+<li>如果哈希冲突很多的话,一些索引维护操作的代价也会很高。例如,如果在某个选择性很低（哈希冲突很多）的列上建立哈希索引,那么当从表中删除一行时,存储引擎需要遍历对应哈希值的链表中的每一行,找到并删除对应行的引用,冲突越多,代价越大。</li>
+</ul>
+<h3 id="3空间数据索引r-tree">3.空间数据索引（R-Tree）</h3>
+<p>MyISAM表支持空间索引,可以用作地理数据存储。和B-Tree索引不同,这类索引无须前缀查询。空间索引会从所有维度来索引数据。查询时,可以有效地使用任意维度来组合查询。必须使用MySQL的GIS相关函数如MBRCONTAINS()等来维护数据。MySQL的GIS支持并不完善,所以大部分人都不会使用这个特性。开源关系数据库系统中对GIS的解决方案做得比较好的是PostgreSQL的PostGIS。</p>
+<h3 id="4全文索引">4.全文索引</h3>
+<p>全文索引是一种特殊类型的索引,它查找的是文本中的关键词,而不是直接比较索引中的值。全文搜索和其他几类索引的匹配方式完全不一样。它有许多需要注意的细节,如停用词、词干和复数、布尔搜索等。全文索引更类似于搜索引擎做的事情,而不是简单的WHERE条件匹配。</p>
+<h3 id="5其他索引类别">5.其他索引类别</h3>
+<p>还有很多第三方的存储引擎使用不同类型的数据结构来存储索引。例如TokuDB使用分形树索引（fractal tree index）,这是一类较新开发的数据结构,既有B-Tree的很多优点,也避免了B-Tree的一些缺点。如果通读完本章,可以看到很多关于InnoDB的主题,包括聚簇索引、覆盖索引等。多数情况下,针对InnoDB的讨论也都适用于TokuDB。ScaleDB使用Patricia tries（这个词不是拼写错误）,其他一些存储引擎技术如InfiniDB和Infobright则使用了一些特殊的数据结构来优化某些特殊的查询。</p>
+<h4 id="索引的优点">索引的优点</h4>
+<ul>
+<li>索引大大减少了服务器需要扫描的数据量。</li>
+<li>索引可以帮助服务器避免排序和临时表。</li>
+<li>索引可以将随机I/O变为顺序I/O。</li>
+</ul>
+<h2 id="二高性能的索引策略">二、高性能的索引策略</h2>
+<p>例如,下面这个查询无法使用actor_id列的索引： mysql&gt; SELECT actor_id FROM sakila.actor WHERE actor_id + 1 = 5;</p>
+<h3 id="1前缀索引和索引选择性">1.前缀索引和索引选择性</h3>
+<p>有时候需要索引很长的字符列,这会让索引变得大且慢。一个策略是前面提到过的模拟哈希索引。但有时候这样做还不够,还可以做些什么呢？通常可以索引开始的部分字符,这样可以大大节约索引空间,从而提高索引效率。但这样也会降低索引的选择性。索引的选择性是指,不重复的索引值（也称为基数,cardinality）和数据表的记录总数（#T）的比值,范围从1/#T到1之间。索引的选择性越高则查询效率越高,因为选择性高的索引可以让MySQL在查找时过滤掉更多的行。唯一索引的选择性是1,这是最好的索引选择性,性能也是最好的。</p>
+<h4 id="前缀索引">前缀索引</h4>
+<ul>
+<li><strong>优点</strong></li>
+</ul>
+<p>一种能使索引更小、更快的有效办法</p>
+<ul>
+<li><strong>缺点</strong></li>
+</ul>
+<p>MySQL无法使用前缀索引做ORDER BY和GROUP BY,也无法使用前缀索引做覆盖扫描</p>
+<h4 id="独立的列">独立的列</h4>
+<p>如果查询中的列不是独立的,则MySQL就不会使用索引。“独立的列”是指索引列不能是表达式的一部分,也不能是函数的参数。例如,下面这个查询无法使用actor_id列的索引： mysql&gt; SELECT actor_id FROM sakila.actor WHERE actor_id + 1 = 5; 凭肉眼很容易看出WHERE中的表达式其实等价于actor_id=4,但是MySQL无法自动解析这个方程式。</p>
+<h4 id="多列索引">多列索引</h4>
+<p><strong>索引合并</strong></p>
+<p>查询能够同时使用这两个单列索引进行扫描,并将结果进行合并。</p>
+<p><strong>是什么</strong></p>
+<p>当WHERE子句中包含多个复杂条件的时候,MySQL能够访问单个表的多个索引以合并和交叉过滤的方式来定位需要查找的行</p>
+<p><strong>使用方法</strong></p>
+<ul>
+<li>UNION ALL</li>
+<li>OR条件的联合（union）</li>
+<li>AND条件的相交（intersection）</li>
+<li>组合前两种情况的联合及相交</li>
+</ul>
+<p><strong>类型</strong></p>
+<p>type:<code>index_merge</code></p>
+<p><strong>说明结果</strong></p>
+<ul>
+<li>当出现服务器对多个索引做相交操作时（通常有多个AND条件）,通常意味着需要一个包含所有相关列的多列索引,而不是多个独立的单列索引。</li>
+<li>当服务器需要对多个索引做联合操作时（通常有多个OR条件）,通常需要耗费大量CPU和内存资源在算法的缓存、排序和合并操作上。特别是当其中有些索引的选择性不高,需要合并扫描返回的大量数据的时候。</li>
+<li>更重要的是,优化器不会把这些计算到“查询成本”（cost）中,优化器只关心随机页面读取。这会使得查询的成本被“低估”,导致该执行计划还不如直接走全表扫描。这样做不但会消耗更多的CPU和内存资源,还可能会影响查询的并发性,但如果是单独运行这样的查询则往往会忽略对并发性的影响。通常来说,还不如像在MySQL 4.1或者更早的时代一样,将查询改写成UNION的方式往往更好。</li>
+</ul>
+<h3 id="2选择合适的索引列顺序">2.选择合适的索引列顺序</h3>
+<h4 id="当不需要考虑排序和分组">当不需要考虑排序和分组</h4>
+<p><strong>办法</strong></p>
+<p>将选择性最高的列放在前面通常是很好的。这时候索引的作用只是用于优化WHERE条件的查找。在这种情况下,这样设计的索引确实能够最快地过滤出需要的行,对于在WHERE子句中只使用了索引部分前缀列的查询来说选择性也更高。</p>
+<p><strong>计算选择性</strong></p>
+<p>看看各个WHERE条件的分支对应的数据基数有多大</p>
+<pre><code>SELECT SUM(staff_id = 2), SUM(customer_id = 584) FROM payment\G
+SELECT COUNT(DISTINCT staff_id)/COUNT(*) AS staff_id_selectivity,     &gt; COUNT(DISTINCT customer_id)/COUNT(*) AS customer_id_selectivity,     &gt; COUNT(*)     &gt; FROM payment\G
+</code></pre><h4 id="需要考虑排序和分组">需要考虑排序和分组</h4>
+<p><strong>聚簇索引</strong></p>
+<p>一种数据存储方式,聚簇索引的每一个叶子节点都包含了主键值、事务ID、用于事务和MVCC的回滚指针以及所有的剩余列（在这个例子中是col2）</p>
+<p><strong>实现方式</strong></p>
+<p>InnoDB的聚簇索引实际上在同一个结构中保存了B-Tree索引和数据行。当表有聚簇索引时,它的数据行实际上存放在索引的叶子页（leaf page）中。</p>
+<p><strong>限制</strong></p>
+<p>因为无法同时把数据行存放在两个不同的地方,所以一个表只能有一个聚簇索引</p>
+<p><strong>使用方式</strong></p>
+<p>InnoDB将通过主键聚集数据,“被索引的列”就是主键列。如果没有定义主键,InnoDB会选择一个唯一的非空索引代替。如果没有这样的索引,InnoDB会隐式定义一个主键来作为聚簇索引。</p>
+<p><strong>聚簇索引的优点和缺点</strong></p>
+<ul>
+<li><strong>优点</strong>
+<ul>
+<li>可以把相关数据保存在一起。例如实现电子邮箱时,可以根据用户ID来聚集数据,这样只需要从磁盘读取少数的数据页就能获取某个用户的全部邮件。如果没有使用聚簇索引,则每封邮件都可能导致一次磁盘I/O。</li>
+<li>数据访问更快。聚簇索引将索引和数据保存在同一个B-Tree中,因此从聚簇索引中获取数据通常比在非聚簇索引中查找要快。</li>
+<li>使用覆盖索引扫描的查询可以直接使用页节点中的主键值。</li>
+</ul>
+</li>
+<li><strong>缺点</strong>
+<ul>
+<li>聚簇数据最大限度地提高了I/O密集型应用的性能,但如果数据全部都放在内存中,则访问的顺序就没那么重要了,聚簇索引也就没什么优势了。</li>
+<li>插入速度严重依赖于插入顺序。按照主键的顺序插入是加载数据到InnoDB表中速度最快的方式。但如果不是按照主键顺序加载数据,那么在加载完成后最好使用OPTIMIZE TABLE命令重新组织一下表。</li>
+<li>更新聚簇索引列的代价很高,因为会强制InnoDB将每个被更新的行移动到新的位置。</li>
+<li>基于聚簇索引的表在插入新行,或者主键被更新导致需要移动行的时候,可能面临“页分裂（page split）”的问题。当行的主键值要求必须将这一行插入到某个已满的页中时,存储引擎会将该页分裂成两个页面来容纳该行,这就是一次页分裂操作。页分裂会导致表占用更多的磁盘空间。</li>
+<li>聚簇索引可能导致全表扫描变慢,尤其是行比较稀疏,或者由于页分裂导致数据存储不连续的时候。</li>
+<li>二级索引（非聚簇索引）可能比想象的要更大,因为在二级索引的叶子节点包含了引用行的主键列。</li>
+<li>二级索引访问需要两次索引查找,而不是一次。</li>
+<li>答案在于二级索引中保存的“行指针”的实质。要记住,二级索引叶子节点保存的不是指向行的物理位置的指针,而是行的主键值。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3innodb和myisam的数据分布对比">3.InnoDB和MyISAM的数据分布对比</h3>
+<h4 id="myisam">MyISAM</h4>
+<p><strong>数据分布顺序</strong></p>
+<p>MyISAM按照数据插入的顺序存储在磁盘上</p>
+<p><strong>索引</strong></p>
+<p>索引中的每个叶子节点包含“行号”。</p>
+<pre><code>key : 键值 value: 行号
+</code></pre><blockquote>
+<p>MyISAM中主键索引和其他索引在结构上没有什么不同。主键索引就是一个名为PRIMARY的唯一非空索引。</p>
+</blockquote>
+<h4 id="innodb">InnoDB</h4>
+<p><strong>数据分布顺序</strong></p>
+<p>聚簇索引“就是”表</p>
+<p><strong>索引</strong></p>
+<p>InnoDB二级索引的叶子节点中存储的不是“行指针”,而是主键值</p>
+<ul>
+<li><strong>好处</strong>
+<ul>
+<li>减少了当出现行移动或者数据页分裂时二级索引的维护工作,InnoDB在移动行时无须更新二级索引中的这个“指针”。</li>
+</ul>
+</li>
+<li><strong>坏处</strong>
+<ul>
+<li>使用主键值当作指针会让二级索引占用更多的空间</li>
+</ul>
+</li>
+</ul>
+<p><strong>在InnoDB表中按主键顺序插入行的策略</strong></p>
+<ul>
+<li>使用AUTO_INCREMENT自增列</li>
+<li>最好避免随机的（不连续且值的分布范围非常大）聚簇索引,特别是对于I/O密集型的应用</li>
+</ul>
+<p><strong>使用UUID来作为聚簇索引则会很糟糕：它使得聚簇索引的插入变得完全随机,这是最坏的情况,使得数据没有任何聚集特性</strong></p>
+<ul>
+<li>结果
+<ul>
+<li>索引占用的空间也更大</li>
+<li>花费的时间更长</li>
+</ul>
+</li>
+<li>原因
+<ul>
+<li>因为写入是乱序的,InnoDB不得不频繁地做页分裂操作,以便为新的行分配空间。页分裂会导致移动大量数据,一次插入最少需要修改三个页而不是一个页。</li>
+<li>由于频繁的页分裂,页会变得稀疏并被不规则地填充,所以最终数据会有碎片。</li>
+<li>写入的目标页可能已经刷到磁盘上并从缓存中移除,或者是还没有被加载到缓存中,InnoDB在插入之前不得不先找到并从磁盘读取目标页到内存中。这将导致大量的随机I/O。</li>
+<li>页的最大填充因子（InnoDB默认的最大填充因子是页大小的15/16,留出部分空间用于以后修改）</li>
+</ul>
+</li>
+<li>顺序的主键什么时候会造成更坏的结果
+<ul>
+<li>高并发工作负载,在InnoDB中按主键顺序插入可能会造成明显的争用
+<ul>
+<li>原因
+<ul>
+<li>并发插入可能导致间隙锁竞争</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>AUTO_INCREMENT锁机制</li>
+<li>解决办法
+<ul>
+<li>更改innodb_autoinc_lock_mode配置</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>二级索引（辅助索引）</strong></p>
+<p>二级索引存储的是记录的主键,而不是数据存储的地址。</p>
+<p><strong>覆盖索引</strong></p>
+<p>如果一个索引包含（或者说覆盖）所有需要查询的字段的值,我们就称之为“覆盖索引”。</p>
+<ul>
+<li>索引类型
+<ul>
+<li><code>Using index</code></li>
+</ul>
+</li>
+<li>成为覆盖索引的条件
+<ul>
+<li>WHERE条件中的列是有索引可以覆盖的,因此MySQL可以使用该索引找到对应的actor并检查title是否匹配,过滤之后再读取需要的数据行</li>
+<li>覆盖索引必须要存储索引列的值,而哈希索引、空间索引和全文索引等都不存储索引列的值,所以MySQL只能使用B-Tree索引做覆盖索</li>
+<li>不同的存储引擎实现覆盖索引的方式也不同,而且不是所有的引擎都支持覆盖索引（在写作本书时,Memory存储引擎就不支持覆盖索引）</li>
+</ul>
+</li>
+<li>如何使用覆盖索引
+<ul>
+<li>MySQL不能在索引中执行LIKE操作。这是底层存储引擎API的限制,MySQL 5.5和更早的版本中只允许在索引中做简单比较操作（例如等于、不等于以及大于）。MySQL能在索引中做最左前缀匹配的LIKE比较,因为该操作可以转换为简单的比较操作,但是如果是通配符开头的LIKE查询,存储引擎就无法做比较匹配。这种情况下,MySQL服务器只能提取数据行的值而不是索引值来做比较。</li>
+</ul>
+</li>
+<li>覆盖索引的好处
+<ul>
+<li>索引条目通常远小于数据行大小,所以如果只需要读取索引,那MySQL就会极大地减少数据访问量。这对缓存的负载非常重要,因为这种情况下响应时间大部分花费在数据拷贝上。覆盖索引对于I/O密集型的应用也有帮助,因为索引比数据更小,更容易全部放入内存中（这对于MyISAM尤其正确,因为MyISAM能压缩索引以变得更小）。</li>
+<li>因为索引是按照列值顺序存储的（至少在单个页内是如此）,所以对于I/O密集型的范围查询会比随机从磁盘读取每一行数据的I/O要少得多。对于某些存储引擎,例如MyISAM和Percona XtraDB,甚至可以通过OPTIMIZE命令使得索引完全顺序排列,这让简单的范围查询能使用完全顺序的索引访问。</li>
+<li>一些存储引擎如MyISAM在内存中只缓存索引,数据则依赖于操作系统来缓存,因此要访问数据需要一次系统调用。这可能会导致严重的性能问题,尤其是那些系统调用占了数据访问中的最大开销的场景。</li>
+<li>由于InnoDB的聚簇索引,覆盖索引对InnoDB表特别有用。InnoDB的二级索引在叶子节点中保存了行的主键值,所以如果二级主键能够覆盖查询,则可以避免对主键索引的二次查询。</li>
+</ul>
+</li>
+<li>使用技巧
+<ul>
+<li>延迟关联
+延迟了对列的访问。在查询的第一阶段MySQL可以使用覆盖索引</li>
+</ul>
+</li>
+</ul>
+<h3 id="4索引条件推送">4.索引条件推送</h3>
+<p>ICP（index condition pushdown）是mysql利用索引（二级索引）元组和筛字段在索引中的where条件从表中提取数据记录的一种优化操作</p>
+<h4 id="实现原理">实现原理</h4>
+<p>存储引擎在访问索引的时候检查筛选字段在索引中的where条件（pushed index condition,推送的索引条件）,如果索引元组中的数据不满足推送的索引条件,那么就过滤掉该条数据记录。ICP（优化器）尽可能的把index condition的处理从server层下推到storage engine层。storage engine使用索引过滤不相关的数据,仅返回符合index condition条件的数据给server层。也是说数据过滤尽可能在storage engine层进行,而不是返回所有数据给server层,然后后再根据where条件进行过滤。</p>
+<h4 id="使用方法">使用方法</h4>
+<pre><code>set optimizer_switch = &quot;index_condition_pushdown=on&quot;
+</code></pre><h3 id="5使用索引扫描来做排序">5.使用索引扫描来做排序</h3>
+<h4 id="判断是否使用了索引来做排序">判断是否使用了索引来做排序</h4>
+<p>如果EXPLAIN出来的type列的值为“index”</p>
+<h4 id="使用条件">使用条件</h4>
+<p><strong>单表</strong></p>
+<p>只有当索引的列顺序和ORDER BY子句的顺序完全一致,并且所有列的排序方向（倒序或正序）都一样时</p>
+<p><strong>关联多张表</strong></p>
+<p>只有当ORDER BY子句引用的字段全部为第一个表时,才能使用索引做排序</p>
+<h3 id="6压缩前缀压缩索引">6.压缩（前缀压缩）索引</h3>
+<p>MyISAM使用前缀压缩来减少索引的大小,从而让更多的索引可以放入内存中,这在某些情况下能极大地提高性能</p>
+<h4 id="实现原理-1">实现原理</h4>
+<p>MyISAM压缩每个索引块的方法是,先完全保存索引块中的第一个值,然后将其他值和第一个值进行比较得到相同前缀的字节数和剩余的不同后缀部分,把这部分存储起来即可</p>
+<h4 id="例子">例子</h4>
+<p>例如,索引块中的第一个值是“perform”,第二个值是“performance”,那么第二个值的前缀压缩后存储的是类似“7,ance”这样的形式。MyISAM对行指针也采用类似的前缀压缩方式。</p>
+<p><strong>优点和缺点</strong></p>
+<ul>
+<li>优点
+<ul>
+<li>压缩块使用更少的空间</li>
+<li>这在某些情况下能极大地提高性能</li>
+</ul>
+</li>
+<li>缺点
+<ul>
+<li>代价是某些操作可能更慢</li>
+</ul>
+</li>
+</ul>
+<p><strong>适用范围</strong></p>
+<p>对于CPU密集型应用,因为扫描需要随机查找,压缩索引使得MyISAM在索引查找上要慢好几倍。压缩索引的倒序扫描就更慢了。压缩索引需要在CPU内存资源与磁盘之间做权衡。压缩索引可能只需要十分之一大小的磁盘空间,如果是I/O密集型应用,对某些查询带来的好处会比成本多很多</p>
+<p><strong>使用方法</strong></p>
+<p>在CREATE TABLE语句中指定PACK_KEYS参数来控制索引压缩的方式</p>
+<h3 id="7冗余和重复索引">7.冗余和重复索引</h3>
+<h4 id="重复索引">重复索引</h4>
+<p>重复索引是指在相同的列上按照相同的顺序创建的相同类型的索引。</p>
+<p><strong>使用范围</strong></p>
+<p>应该避免这样创建重复索引,发现以后也应该立即移除</p>
+<h4 id="冗余索引">冗余索引</h4>
+<p>如果创建了索引（A,B）,再创建索引（A）就是冗余索引,因为这只是前一个索引的前缀索引。</p>
+<p><strong>适用范围</strong></p>
+<p>大多数情况下都不需要冗余索引,应该尽量扩展已有的索引而不是创建新索引。但也有时候出于性能方面的考虑需要冗余索引,因为扩展已有的索引会导致其变得太大,从而影响其他使用该索引的查询的性能。</p>
+<p><strong>缺点</strong></p>
+<p>表中的索引越多插入速度会越慢</p>
+<p><strong>解决办法</strong></p>
+<p>首先要做的是找出这样的索引。可以通过写一些复杂的访问INFORMATION_SCHEMA表的查询来找,不过还有两个更简单的方法。可使用Shlomi Noach的common_schema中的一些视图来定位</p>
+<h3 id="8未使用的索引">8.未使用的索引</h3>
+<p><strong>适用范围</strong></p>
+<p>这样的索引完全是累赘,建议考虑删除(18)</p>
+<p><strong>解决办法</strong></p>
+<p>有两个工具可以帮助定位未使用的索引。最简单有效的办法是在Percona Server或者MariaDB中先打开userstates服务器变量（默认是关闭的）,然后让服务器正常运行一段时间,再通过查询INFORMATION_SCHEMA.INDEX_STATISTICS就能查到每个索引的使用频率。</p>
+<h3 id="9索引和锁">9.索引和锁</h3>
+<p>索引可以让查询锁定更少的行</p>
+<h4 id="实现原理-2">实现原理</h4>
+<p>InnoDB只有在访问行的时候才会对其加锁,而索引能够减少InnoDB访问的行数,从而减少锁的数量。但这只有当InnoDB在存储引擎层能够过滤掉所有不需要的行时才有效。</p>
+<p><strong>释放锁时机</strong></p>
+<ul>
+<li><strong>在早期的MySQL版本中</strong>
+<ul>
+<li>InnoDB只有在事务提交后才能释放锁</li>
+</ul>
+</li>
+<li><strong>在MySQL 5.1和更新的版本及以后</strong>
+<ul>
+<li>InnoDB可以在服务器端过滤掉行后就释放锁</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>注意:InnoDB在二级索引上使用共享（读）锁,但访问主键索引需要排他（写）锁。这消除了使用覆盖索引的可能性,并且使得<code>SELECT FOR UPDATE</code>比<code>LOCK IN SHARE MOD</code>E 或非锁定查询要慢很多</p>
+</blockquote>
+<h2 id="三索引案例学习">三、索引案例学习</h2>
+<h3 id="1支持多种过滤条件">1.支持多种过滤条件</h3>
+<h4 id="事例">事例</h4>
+<p>country列的选择性通常不高,但可能很多查询都会用到。sex列的选择性肯定很低,但也会在很多查询中用到。所以考虑到使用的频率,还是建议在创建不同组合索引的时候将（sex,country）列作为前缀。</p>
+<h4 id="疑问">疑问</h4>
+<p>但根据传统的经验不是说不应该在选择性低的列上创建索引的吗？那为什么这里要将两个选择性都很低的字段作为索引的前缀列?我们的脑子坏了?</p>
+<h4 id="理由">理由</h4>
+<p>如前所述几乎所有的查询都会用到sex列。前面曾提到,几乎每一个查询都会用到sex列,甚至会把网站设计成每次都只能按某一种性别搜索用户,索引中加上这一列也没有坏处,即使查询没有使用sex列也可以通过下面的“诀窍”绕过。</p>
+<h4 id="诀窍">诀窍</h4>
+<p>如果某个查询不限制性别,那么可以通过在查询条件中新增AND SEX IN（’m’,’f’）</p>
+<blockquote>
+<p>但这种技巧也不能滥用,否则可能会带来麻烦。因为每额外增加一个IN()条件,优化器需要做的组合都将以指数形式增加,最终可能会极大地降低查询性能。考虑下面的WHERE子句： WHERE eye_color IN(‘brown’,’blue’,’hazel’) AND hair_color IN(‘black’,’red’,’blonde’,’brown’) AND sex IN(‘M’,’F’) 优化器则会转化成4×3×2=24种组合,执行计划需要检查WHERE子句中所有的24种组合。对于MySQL来说,24种组合并不是很夸张,但如果组合数达到上千个则需要特别小心。老版本的MySQL在IN()组合条件过多的时候会有很多问题。查询优化可能需要花很多时间,并消耗大量的内存。</p>
+</blockquote>
+<h3 id="2避免多个范围条件">2.避免多个范围条件</h3>
+<ul>
+<li>范围条件查询(x &gt; ? )</li>
+<li>多个等值条件查询 (in(xxx))</li>
+</ul>
+<p><strong>类型</strong></p>
+<p>type:<code>range</code></p>
+<p><strong>效率</strong></p>
+<ul>
+<li>范围条件查询无法再使用范围列后面的其他索引列了</li>
+<li>“多个等值条件查询”则没有这个限制</li>
+</ul>
+<h3 id="3优化排序">3.优化排序</h3>
+<h4 id="案例">案例</h4>
+<p>使用了ORDER BY和LIMIT,如果没有索引的话会很慢。</p>
+<h4 id="原因">原因</h4>
+<p>如果用户界面上需要翻页,并且翻页翻到比较靠后时查询也可能非常慢</p>
+<h4 id="方法">方法</h4>
+<ul>
+<li>对于那些选择性非常低的列,可以增加一些特殊的索引来做排序</li>
+<li>反范式化、预先计算和缓存可能是解决这类查询的仅有策略</li>
+<li>一个更好的办法是限制用户能够翻页的数量</li>
+<li>使用延迟关联,通过使用覆盖索引查询返回需要的主键,再根据这些主键关联原表获得需要的行</li>
+</ul>
+<h2 id="四维护索引和表">四、维护索引和表</h2>
+<h3 id="1找到并修复损坏的表">1.找到并修复损坏的表</h3>
+<h4 id="检查是否发生了表损坏">检查是否发生了表损坏</h4>
+<pre><code>CHECK TABLE
+</code></pre><h4 id="修复损坏的表">修复损坏的表</h4>
+<pre><code>REPAIR TABLE
+</code></pre><h4 id="如果innodb引擎的表出现了损坏">如果InnoDB引擎的表出现了损坏</h4>
+<ul>
+<li>原因
+<ul>
+<li>如果发生损坏,一般要么是数据库的硬件问题例如内存或者磁盘问题（有可能）,要么是由于数据库管理员的错误例如在MySQL外部操作了数据文件（有可能）,抑或是InnoDB本身的缺陷（不太可能）。</li>
+<li>常见的类似错误通常是由于尝试使用rsync备份InnoDB导致的。</li>
+</ul>
+</li>
+<li>解决步骤
+<ul>
+<li>可以通过设置innodb_force_recovery参数进入InnoDB的强制恢复模式来修复数据</li>
+</ul>
+</li>
+</ul>
+<h3 id="2更新索引统计信息">2.更新索引统计信息</h3>
+<p>新版本的InnoDB可以通过参数innodb_stats_sample_pages来设置样本页的数量。设置更大的值,理论上来说可以帮助生成更准确的索引信息</p>
+<h4 id="减少索引和数据的碎片">减少索引和数据的碎片</h4>
+<ul>
+<li>碎片产生的原因
+<ul>
+<li>B-Tree索引可能会碎片化,这会降低查询的效率。碎片化的索引可能会以很差或者无序的方式存储在磁盘上。</li>
+</ul>
+</li>
+<li>有三种类型的数据碎片
+<ul>
+<li>行碎片（Row fragmentation）
+这种碎片指的是数据行被存储为多个地方的多个片段中。即使查询只从索引中访问一行记录,行碎片也会导致性能下降。</li>
+<li>行间碎片（Intra-row fragmentation）
+行间碎片是指逻辑上顺序的页,或者行在磁盘上不是顺序存储的。行间碎片对诸如全表扫描和聚簇索引扫描之类的操作有很大的影响,因为这些操作原本能够从磁盘上顺序存储的数据中获益。</li>
+<li>剩余空间碎片（Free space fragmentation）
+剩余空间碎片是指数据页中有大量的空余空间。这会导致服务器读取大量不需要的数据,从而造成浪费。</li>
+</ul>
+</li>
+<li><strong>产生范围</strong>
+<ul>
+<li>对于MyISAM表,这三类碎片化都可能发生。但InnoDB不会出现短小的行碎片；InnoDB会移动短小的行并重写到一个片段中。</li>
+</ul>
+</li>
+<li><strong>解决办法</strong>
+<ul>
+<li>通过执行OPTIMIZE TABLE或者导出再导入的方式来重新整理数据。
+对于那些不支持OPTIMIZE TABLE的存储引擎,可以通过一个不做任何操作（no-op）的ALTER TABLE操作来重建表。只需要将表的存储引擎修改为当前的引擎即可： <code>ALTER TABLE &lt;table&gt; ENGINE=&lt;engine&gt;;</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="五总结">五、总结</h2>
+<h3 id="1在选择索引和编写利用这些索引的查询时有如下三个原则">1.在选择索引和编写利用这些索引的查询时,有如下三个原则</h3>
+<ol>
+<li>单行访问是很慢的。特别是在机械硬盘存储中（SSD的随机I/O要快很多,不过这一点仍然成立）。如果服务器从存储中读取一个数据块只是为了获取其中一行,那么就浪费了很多工作。最好读取的块中能包含尽可能多所需要的行。使用索引可以创建位置引用以提升效率。</li>
+<li>按顺序访问范围数据是很快的,顺序I/O不需要多次磁盘寻道,所以比随机I/O要快很多（特别是对机械硬盘）。</li>
+<li>第二,如果服务器能够按需要顺序读取数据,那么就不再需要额外的排序操作,并且GROUP BY查询也无须再做排序和将行按组进行聚合计算了。</li>
+</ol>
+<blockquote>
+<p>索引覆盖查询是很快的。如果一个索引包含了查询需要的所有列,那么存储引擎就不需要再回表查找行。这避免了大量的单行访问,而上面的第1点已经写明单行访问是很慢的。</p>
+</blockquote>
+<h3 id="2如何判断一个系统创建的索引是合理的呢">2.如何判断一个系统创建的索引是合理的呢？</h3>
+<p>一般来说,我们建议按响应时间来对查询进行分析。找出那些消耗最长时间的查询或者那些给服务器带来最大压力的查询。</p>
+<blockquote>
+<p><a href="https://www.ulovecode.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/">https://www.ulovecode.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/</a></p>
+</blockquote>
+
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="https://https://isaacrolo.github.io/">Rolo</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/">https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/">高性能 MySQL ｜ MySQL 逻辑架构</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/">高性能 MySQL ｜ Schema 与数据类型优化</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">高性能 MySQL ｜ 查询性能优化</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/16s/">魅族16s使用半年有感</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/SQLInjection/">关于防止sql注入的思考</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/isaacrolo.github.io/tags/MySQL'>MySQL </a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://https://isaacrolo.github.io/">Rolo的日常 By Rolo</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/isaacrolo.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+    <script type="text/javascript" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+
+
+
+    <script src='/isaacrolo.github.io/js/douban.js'></script>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='https://https:/isaacrolo.github.io/search/' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://https://isaacrolo.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/" title="Mysql索引原理与优化">Mysql索引原理与优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/" title="区块链入门">区块链入门</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/work-tips/" title="一份工作中最重要的5个要素">一份工作中最重要的5个要素</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/" title="高性能 MySQL ｜ MySQL 逻辑架构">高性能 MySQL ｜ MySQL 逻辑架构</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ Schema 与数据类型优化">高性能 MySQL ｜ Schema 与数据类型优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/" title="高性能 MySQL ｜ 创建高性能的索引">高性能 MySQL ｜ 创建高性能的索引</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ 查询性能优化">高性能 MySQL ｜ 查询性能优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/16s/" title="魅族16s使用半年有感">魅族16s使用半年有感</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/SQLInjection/" title="关于防止sql注入的思考">关于防止sql注入的思考</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Hadoop/" title="Hadoop">Hadoop</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Database/">Database (6)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Spring-Cloud/">Spring Cloud (2)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/web/">web (1)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://https://isaacrolo.github.io/tags/BlockChain/">BlockChain</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Elasticsearch/">Elasticsearch</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Java/">Java</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/MySQL/">MySQL </a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Redis/">Redis</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Boot/">Spring Boot</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Cloud/">Spring Cloud</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Tableau/">Tableau</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/web/">web</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E7%BD%91%E7%BB%9C/">网络</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://https:/isaacrolo.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

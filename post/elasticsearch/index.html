@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+
+    <title>Elasticsearch | Rolo的日常</title>
+    <meta property="og:title" content="Elasticsearch - Rolo的日常">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-07-04T10:52:11&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-07-04T10:52:11&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,go语言,go语言笔记,飞雪无情,java,android,博客,项目管理,python,软件架构,公众号,小程序">
+    <meta name="description" content="Elasticsearch">
+        
+    <meta name="author" content="Rolo">
+    <meta property="og:url" content="https://https://isaacrolo.github.io/post/elasticsearch/">
+    <link rel="shortcut icon" href='/isaacrolo.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/douban.css'>
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/other.css'>
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://https://isaacrolo.github.io/">
+                        Rolo的日常
+                    </a>
+                
+                <p class="description">Laziness, Impatience, and Hubris</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="https://https://isaacrolo.github.io/">首页</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/system/" title="知识体系">知识体系</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/archives/" title="归档">归档</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#mongodb和elasticsearch的对比">MongoDB和Elasticsearch的对比</a></li>
+        <li><a href="#elasticsearch-2x中文文档">Elasticsearch 2.x中文文档</a></li>
+        <li><a href="#es-java-api的选择">ES java api的选择</a></li>
+        <li><a href="#概念">概念</a></li>
+        <li><a href="#在docker中安装es">在docker中安装ES</a></li>
+        <li><a href="#依赖">依赖</a></li>
+        <li><a href="#springboot整合-rest-high-level-client">Springboot整合 Rest High Level Client</a></li>
+        <li><a href="#rest-high-level-client-api官方文档httpswwwelasticcoguideenelasticsearchclientjava-rest64java-rest-high-searchhtml">Rest High Level Client API【<a href="https://www.elastic.co/guide/en/elasticsearch/client/java-rest/6.4/java-rest-high-search.html">官方文档</a>】</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">Elasticsearch</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年7月4日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/isaacrolo.github.io/categories/'></a></span>
+            
+        </div>
+        
+        
+        <div class="post-meta">
+            <span id="busuanzi_container_page_pv">|<span id="busuanzi_value_page_pv"></span><span>
+                    阅读</span></span>
+        </div>
+        
+        
+        <div class="post-content">
+            <h3 id="mongodb和elasticsearch的对比">MongoDB和Elasticsearch的对比</h3>
+<hr>
+<p><a href="https://leriou.github.io/2019-01-09-mongodb-compareto-elasticsearch/">https://leriou.github.io/2019-01-09-mongodb-compareto-elasticsearch/</a></p>
+<h3 id="elasticsearch-2x中文文档">Elasticsearch 2.x中文文档</h3>
+<hr>
+<p><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/cn/_add-an-index.html">https://www.elastic.co/guide/cn/elasticsearch/guide/cn/_add-an-index.html</a></p>
+<h3 id="es-java-api的选择">ES java api的选择</h3>
+<hr>
+<ul>
+<li>TransportClient【ES7.0废弃】</li>
+<li>RestClient
+<ul>
+<li>Java Low Level REST Client</li>
+<li>Java High Level REST Client【<a href="https://www.elastic.co/guide/en/elasticsearch/client/java-rest/master/java-rest-high-document-index.html">官方推荐</a>】</li>
+</ul>
+</li>
+<li><a href="https://github.com/searchbox-io/Jest">Jest</a> 【<a href="https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-connecting-to-elasticsearch-rest">SpingBoot官方文档</a>】</li>
+<li>Spring Data Elasticsearch 【<a href="https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-connecting-to-elasticsearch-rest">SpingBoot官方文档</a>】</li>
+</ul>
+<h3 id="概念">概念</h3>
+<hr>
+<ul>
+<li>
+<p>索引</p>
+<p>索引实际上是指向一个或者多个物理 <em>分片</em> 的 <em>逻辑命名空间</em> 。</p>
+</li>
+<li>
+<p>分片</p>
+<p>一个<em>分片</em> 是一个底层的 <em>工作单元</em> ，它仅保存了 全部数据中的一部分</p>
+</li>
+<li>
+<p>主/副本分片</p>
+<p>一个副本分片只是一个主分片的拷贝。 副本分片作为硬件故障时保护数据不丢失的冗余备份，并为搜索和返回文档等读操作提供服务。</p>
+<p>在索引建立的时候就已经确定了主分片数，但是副本分片数可以随时修改。</p>
+</li>
+<li>
+<p>映射 Mapping</p>
+<p>Elasticsearch 需要知道每个域中数据的类型。这个信息包含在映射中。</p>
+<p>Elasticsearch 支持 如下简单域类型：</p>
+<ul>
+<li>字符串: <code>string</code></li>
+<li>整数 : <code>byte</code>, <code>short</code>, <code>integer</code>, <code>long</code></li>
+<li>浮点数: <code>float</code>, <code>double</code></li>
+<li>布尔型: <code>boolean</code></li>
+<li>日期: <code>date</code></li>
+</ul>
+</li>
+<li>
+<p>多个域 fields</p>
+<p>通过不同的方法索引相同的域通常非常有用。这也是多域的目的。例如，一个字符串域可以映射为text域用于全文本搜索，也可以映射为keyword域用于排序或聚合。</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">13
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">14
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">15
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#a61717;background-color:#e3d2d2">PUT</span> <span style="color:#a61717;background-color:#e3d2d2">my_index</span>
+{
+  <span style="color:#000080">&#34;mappings&#34;</span>: {
+    <span style="color:#000080">&#34;properties&#34;</span>: {
+      <span style="color:#000080">&#34;city&#34;</span>: {
+        <span style="color:#000080">&#34;type&#34;</span>: <span style="color:#d14">&#34;text&#34;</span>,
+        <span style="color:#000080">&#34;fields&#34;</span>: {
+          <span style="color:#000080">&#34;raw&#34;</span>: { 
+            <span style="color:#000080">&#34;type&#34;</span>:  <span style="color:#d14">&#34;keyword&#34;</span>
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>分析</p>
+<ul>
+<li>首先，将一块文本分成适合于倒排索引的独立的词条 ，</li>
+<li>之后，将这些词条统一化为标准格式以提高它们的“可搜索性”，或者 <em>recall</em></li>
+</ul>
+</li>
+<li>
+<p>分析器</p>
+<p>在一个包里面组合了三种函数的一个包装器， 三种函数按照顺序被执行: <strong>字符过滤器</strong>，<strong>分词器</strong>，<strong>词单元过滤器</strong></p>
+</li>
+</ul>
+<h3 id="在docker中安装es">在docker中安装ES</h3>
+<hr>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">docker pull docker.elastic.co/elasticsearch/elasticsearch:6.4.2
+
+docker run <span style="color:#d14">\
+</span><span style="color:#d14"></span>  --name es6.4.2 <span style="color:#d14">\
+</span><span style="color:#d14"></span>  -p 9200:9200 -p 9300:9300 <span style="color:#d14">\
+</span><span style="color:#d14"></span>  -e <span style="color:#d14">&#34;discovery.type=single-node&#34;</span> <span style="color:#d14">\
+</span><span style="color:#d14"></span>  docker.elastic.co/elasticsearch/elasticsearch:6.4.2
+  
+<span style="color:#998;font-style:italic">#默认用户名密码 elastic/changeme</span>
+curl -XPUT -u elastic <span style="color:#d14">&#39;http://localhost:9200/_xpack/security/user/kibana/_password&#39;</span> -d <span style="color:#d14">&#39;{
+</span><span style="color:#d14">  &#34;password&#34; : &#34;yourpasswd&#34;
+</span><span style="color:#d14">}&#39;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><a href="https://github.com/jaywcjlove/docker-tutorial/blob/master/docker/elasticsearch.md">https://github.com/jaywcjlove/docker-tutorial/blob/master/docker/elasticsearch.md</a></p>
+<h3 id="依赖">依赖</h3>
+<hr>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">    <span style="color:#000;font-weight:bold">&lt;</span>properties<span style="color:#000;font-weight:bold">&gt;</span>
+        <span style="color:#000;font-weight:bold">&lt;</span>java<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">version</span><span style="color:#000;font-weight:bold">&gt;</span>1<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">8</span><span style="color:#000;font-weight:bold">&lt;/</span>java<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">version</span><span style="color:#000;font-weight:bold">&gt;</span>
+        <span style="color:#000;font-weight:bold">&lt;</span>elasticsearch<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">version</span><span style="color:#000;font-weight:bold">&gt;</span>6<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">4</span><span style="color:#000;font-weight:bold">.</span><span style="color:#008080">2</span><span style="color:#000;font-weight:bold">&lt;/</span>elasticsearch<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">version</span><span style="color:#000;font-weight:bold">&gt;</span>
+    <span style="color:#000;font-weight:bold">&lt;/</span>properties<span style="color:#000;font-weight:bold">&gt;</span>
+
+    <span style="color:#000;font-weight:bold">&lt;</span>dependencies<span style="color:#000;font-weight:bold">&gt;</span>
+        <span style="color:#000;font-weight:bold">&lt;</span>dependency<span style="color:#000;font-weight:bold">&gt;</span>
+            <span style="color:#000;font-weight:bold">&lt;</span>groupId<span style="color:#000;font-weight:bold">&gt;</span>org<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">elasticsearch</span><span style="color:#000;font-weight:bold">.</span><span style="color:#008080">client</span><span style="color:#000;font-weight:bold">&lt;/</span>groupId<span style="color:#000;font-weight:bold">&gt;</span>
+            <span style="color:#000;font-weight:bold">&lt;</span>artifactId<span style="color:#000;font-weight:bold">&gt;</span>elasticsearch<span style="color:#000;font-weight:bold">-</span>rest<span style="color:#000;font-weight:bold">-</span>high<span style="color:#000;font-weight:bold">-</span>level<span style="color:#000;font-weight:bold">-</span>client<span style="color:#000;font-weight:bold">&lt;/</span>artifactId<span style="color:#000;font-weight:bold">&gt;</span>
+            <span style="color:#000;font-weight:bold">&lt;</span>version<span style="color:#000;font-weight:bold">&gt;</span>6<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">4</span><span style="color:#000;font-weight:bold">.</span><span style="color:#008080">2</span><span style="color:#000;font-weight:bold">&lt;/</span>version<span style="color:#000;font-weight:bold">&gt;</span>
+        <span style="color:#000;font-weight:bold">&lt;/</span>dependency<span style="color:#000;font-weight:bold">&gt;</span>
+    <span style="color:#000;font-weight:bold">&lt;/</span>dependencies<span style="color:#000;font-weight:bold">&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>连接报错，找不到DeprecationHandler类</p>
+<pre><code>nested exception is java.lang.NoClassDefFoundError: org/elasticsearch/common/xcontent/DeprecationHandler
+</code></pre><p>使用了<code>spring-boot-starter-parent</code>作为maven的parent，在这个parent的dependencyManagement标签下有elasticsearch版本<code>&lt;elasticsearch.version&gt;2.4.6&lt;/elasticsearch.version&gt;</code>，与实际版本不一致</p>
+<h3 id="springboot整合-rest-high-level-client">Springboot整合 Rest High Level Client</h3>
+<hr>
+<p><a href="https://www.jianshu.com/p/0b4f5e41405e">https://www.jianshu.com/p/0b4f5e41405e</a></p>
+<h3 id="rest-high-level-client-api官方文档httpswwwelasticcoguideenelasticsearchclientjava-rest64java-rest-high-searchhtml">Rest High Level Client API【<a href="https://www.elastic.co/guide/en/elasticsearch/client/java-rest/6.4/java-rest-high-search.html">官方文档</a>】</h3>
+<hr>
+<ul>
+<li>基本增删改查</li>
+<li>SearchRequest高级查询
+<ul>
+<li>模糊查询</li>
+<li>聚合查询</li>
+<li>分页和滚动搜索</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="https://https://isaacrolo.github.io/">Rolo</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="https://https://isaacrolo.github.io/post/elasticsearch/">https://https://isaacrolo.github.io/post/elasticsearch/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/isaacrolo.github.io/post/java8/">关于lambda表达式和Stream API的思考</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/cookie_session/">Cookie_session</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/jsoup/">Java爬虫—Jsoup</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/zuul/">整合Zuul</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/springboot-transfer/">SpringBoot 迁移</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/isaacrolo.github.io/tags/Elasticsearch'>Elasticsearch</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://https://isaacrolo.github.io/">Rolo的日常 By Rolo</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/isaacrolo.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+    <script type="text/javascript" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+
+
+
+    <script src='/isaacrolo.github.io/js/douban.js'></script>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='https://https:/isaacrolo.github.io/search/' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://https://isaacrolo.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/" title="Mysql索引原理与优化">Mysql索引原理与优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/" title="区块链入门">区块链入门</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/work-tips/" title="一份工作中最重要的5个要素">一份工作中最重要的5个要素</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/" title="高性能 MySQL ｜ MySQL 逻辑架构">高性能 MySQL ｜ MySQL 逻辑架构</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ Schema 与数据类型优化">高性能 MySQL ｜ Schema 与数据类型优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/" title="高性能 MySQL ｜ 创建高性能的索引">高性能 MySQL ｜ 创建高性能的索引</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ 查询性能优化">高性能 MySQL ｜ 查询性能优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/16s/" title="魅族16s使用半年有感">魅族16s使用半年有感</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/SQLInjection/" title="关于防止sql注入的思考">关于防止sql注入的思考</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Hadoop/" title="Hadoop">Hadoop</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Database/">Database (6)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Spring-Cloud/">Spring Cloud (2)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/web/">web (1)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://https://isaacrolo.github.io/tags/BlockChain/">BlockChain</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Elasticsearch/">Elasticsearch</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Java/">Java</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/MySQL/">MySQL </a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Redis/">Redis</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Boot/">Spring Boot</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Cloud/">Spring Cloud</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Tableau/">Tableau</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/web/">web</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E7%BD%91%E7%BB%9C/">网络</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://https:/isaacrolo.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

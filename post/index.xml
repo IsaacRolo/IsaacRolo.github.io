@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Rolo的日常</title>
+    <link>https://https://isaacrolo.github.io/post/</link>
+    <description>Recent content in Posts on Rolo的日常</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Wed, 28 Apr 2021 22:02:13 +0800</lastBuildDate><atom:link href="https://https://isaacrolo.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Mysql索引原理与优化</title>
+      <link>https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/</link>
+      <pubDate>Wed, 28 Apr 2021 22:02:13 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/</guid>
+      <description>索引分类 Hash索引 对每一行数据，存储引擎对所有的索引列计算一个Hash码 Hash索引的限制： 只包含Hash值和行指针，不存储值，故无法使用覆盖索引 不是按照索引值的顺序排序的，故无法用于排序，范围查询 不支持部分索引匹配查找，联合索引（A，B）不能只匹配其中一列 Hash冲突多次，需</description>
+    </item>
+    
+    <item>
+      <title>区块链入门</title>
+      <link>https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/</link>
+      <pubDate>Mon, 12 Apr 2021 20:33:13 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/</guid>
+      <description>区块链的本质 区块链是一种特殊的分布式数据库 区块链的主要作用是储存信息。任何需要保存的信息，都可以写入区块链，也可以从里面读取，所以它是数据库。 任何人都可以架设服务器，加入区块链网络，成为一个节点。区块链的世界里面，没有中心节点，每个节点都是平等的，都保存着整个数据库。你可以向任何</description>
+    </item>
+    
+    <item>
+      <title>一份工作中最重要的5个要素</title>
+      <link>https://https://isaacrolo.github.io/post/work-tips/</link>
+      <pubDate>Mon, 05 Apr 2021 10:10:45 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/work-tips/</guid>
+      <description>一份工作中最重要的5个要素 同事是怎么样的 老板是怎么样的 工作空间的舒适程度 报酬 每天实际上在做的事情 对于你当前的工作，这五条中有多少条你是觉得满意的？ https://v2ex.com/t/509140</description>
+    </item>
+    
+    <item>
+      <title>高性能 MySQL ｜ MySQL 逻辑架构</title>
+      <link>https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/</link>
+      <pubDate>Thu, 11 Feb 2021 21:11:13 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/</guid>
+      <description>高性能 MySQL ｜ MySQL 逻辑架构 MySQL 的逻辑架构分为三层,客户端,服务器,存储引擎。 一、逻辑架构 架构图 1.客户端 第一层负责连接管理、授权认证、安全等等。每个客户端的连接都对应着服务器上的一个线程。服务器上维护了一个线程池,避免为每个连接都创建销毁一个线程。当客户端连接到MySQL服务器时,服务器</description>
+    </item>
+    
+    <item>
+      <title>高性能 MySQL ｜ Schema 与数据类型优化</title>
+      <link>https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/</link>
+      <pubDate>Thu, 11 Feb 2021 21:11:13 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/</guid>
+      <description>高性能 MySQL ｜ Schema 与数据类型优化 MySQL 支持的数据类型非常多,选择正确的数据类型至关重要。下面的几个简单原则有助于做出更好的选择。 一、更小的通常更好 一般情况下,应该尽量使用可以正确存储数据的最小数据类型。更小的数据类型通常更快,因为他们占用更少的磁盘,内存和cpu缓存,并且处理时需要的cpu</description>
+    </item>
+    
+    <item>
+      <title>高性能 MySQL ｜ 创建高性能的索引</title>
+      <link>https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/</link>
+      <pubDate>Thu, 11 Feb 2021 21:11:13 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/</guid>
+      <description>高性能 MySQL ｜ 创建高性能的索引 索引对于良好的性能非常关键,尤其是当表中的数据量越来越大时,索引对性能的影响愈发重要。在数据量较小且负载较低时,不恰当的索引对性能的影响可能还不明显,但当数据量逐渐增大时,性能则会急剧下降。 一、索引的类型 1.B+Tree索引 B-Tree索引使用B-Tre</description>
+    </item>
+    
+    <item>
+      <title>高性能 MySQL ｜ 查询性能优化</title>
+      <link>https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</link>
+      <pubDate>Thu, 11 Feb 2021 21:11:13 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/</guid>
+      <description>高性能 MySQL ｜ 查询性能优化 MySQL 查询性能的优化涉及多个方面,其中包括库表结构、建立合理的索引、设计合理的查询。库表结构包括如何设计表之间的关联、表字段的数据类型等。这需要依据具体的场景进行设计。如下我们从数据库的索引和查询语句的设计两个角度介绍如何提高 MySQL 查询性能。 一、为什么查询速度会慢?</description>
+    </item>
+    
+    <item>
+      <title>魅族16s使用半年有感</title>
+      <link>https://https://isaacrolo.github.io/post/16s/</link>
+      <pubDate>Thu, 31 Oct 2019 09:49:13 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/16s/</guid>
+      <description>本人于4月23日以3199的价格购入16s 当时选择16s看重的是他的非异形屏，横向线性马达，双扬声器，和小而美的flyme 但在半年的实际使用过程中，这手机许多地方都表现的不尽人意 首先是降价事件，16s在发布不到2个月的时间就降价500元，这件事我不做任何评价，但是还是把我这种首发</description>
+    </item>
+    
+    <item>
+      <title>关于防止sql注入的思考</title>
+      <link>https://https://isaacrolo.github.io/post/SQLInjection/</link>
+      <pubDate>Wed, 30 Oct 2019 13:44:55 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/SQLInjection/</guid>
+      <description>首先思考以下几个问题 preparedstatement一定能够防止sql注入吗？ preparedstatement防止sql注入的原理是什么？ 使用框架【Mybatis,JPA】访问数据库，能防止sql注入吗？是怎样防止的？ 原生JDBC 使用PreparedStatement代替St</description>
+    </item>
+    
+    <item>
+      <title>Hadoop</title>
+      <link>https://https://isaacrolo.github.io/post/Hadoop/</link>
+      <pubDate>Thu, 17 Oct 2019 11:22:14 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/Hadoop/</guid>
+      <description>Hadoop生态 计算框架 - Spark MapReduce 持久化存储 hdfs hbase 列式nosql数据库，存储结构化数据 适合大数据的实时查询 基于hadoop和zookeeper 只提供了 Java 的 API 接口，不直接支持 SQL 的语句查询 存储层是hdfs，在特殊的情况下也可以直接使用本机的文件系统 hive 适合离线分析查询，如计算趋势或分析一段时</description>
+    </item>
+    
+    <item>
+      <title>如何设计Restful API</title>
+      <link>https://https://isaacrolo.github.io/post/Restful/</link>
+      <pubDate>Tue, 06 Aug 2019 16:46:11 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/Restful/</guid>
+      <description>接口设计 组织机构 查询组织机构列表 Get /organization 新增组织机构 Post /organization Content-Type: application/json 1 2 3 4 { &amp;#34;previousOrg&amp;#34;: &amp;#34;xxx&amp;#34;, &amp;#34;orgName&amp;#34;: &amp;#34;xxx&amp;#34; } 修改组织机构 Put /organization/{orgId} 删除组织机构 Delete /organization/{orgId} 配置组织机构的数据权限 Put /organization/{orgId}/dataAuth 1 2 3 { &amp;#34;auth&amp;#34;: [{&amp;#34;organizationName1&amp;#34;:1},{&amp;#34;organizationName2&amp;#34;:0},{},...] } 实际开发中遇到的问题： get和delete请求没有请求体，能否使用@RequestBody来传值？ Restful API 关于批量删除接口怎么设计？ delete /users/1,2,3,4</description>
+    </item>
+    
+    <item>
+      <title>不用鼠标玩耍Chrome</title>
+      <link>https://https://isaacrolo.github.io/post/Vimium/</link>
+      <pubDate>Thu, 01 Aug 2019 14:12:19 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/Vimium/</guid>
+      <description>Chrome插件Vimium Vimium provides keyboard shortcuts for navigation and control in the spirit of Vim. 常用快捷键 ？ 帮助页面，快捷键列表 h,j,k,l 移动光标左，下，上，右 gg , G 页面顶部，页面底部 J,K 切换Tab H,L 后退，前进 T 打开的Tab列表 x,X 关闭当前Tab，撤销关闭Tab 常用操作 如何选中复制页面上的文字？ 搜索起始点：/搜索内容 启用视觉模式：v</description>
+    </item>
+    
+    <item>
+      <title>Redis</title>
+      <link>https://https://isaacrolo.github.io/post/Redis/</link>
+      <pubDate>Thu, 18 Jul 2019 10:55:08 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/Redis/</guid>
+      <description>概念 数据类型 String（字符串） string是redis最基本的类型，一个key对应一个value。string类型是Redis最基本的数据类型，一个键最大能存储512MB。 Hash（哈希） List（列表） Set（集合） zset（sorted set：有序集合） 使用场景 作为ses</description>
+    </item>
+    
+    <item>
+      <title>Https</title>
+      <link>https://https://isaacrolo.github.io/post/https/</link>
+      <pubDate>Wed, 17 Jul 2019 10:29:31 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/https/</guid>
+      <description>HTTPS 超文本传输安全协议是一种通过计算机网络进行安全通信的传输协议。HTTPS经由HTTP进行通信，但利用SSL/TLS来加密数据包。HTTPS开发的主要目的，是提供对网站服务器的身份认证，保护交换数据的隐私与完整性。 SSL/TSL 传输层安全性协议（英语：Transport Layer Security，缩</description>
+    </item>
+    
+    <item>
+      <title>Elasticsearch</title>
+      <link>https://https://isaacrolo.github.io/post/elasticsearch/</link>
+      <pubDate>Thu, 04 Jul 2019 10:52:11 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/elasticsearch/</guid>
+      <description>MongoDB和Elasticsearch的对比 https://leriou.github.io/2019-01-09-mongodb-compareto-elasticsearch/ Elasticsearch 2.x中文文档 https://www.elastic.co/guide/cn/elasticsearch/guide/cn/_add-an-index.html ES java api的选择 TransportClient【ES7.0废弃】 RestClient Java Low Level REST Client Java High Level REST Client【官方推荐】 Jest 【SpingBoot官方文档】 Spring Data Elasticsearch 【SpingBoot官方文档】 概念 索引 索引实际上是指向一个或者多个</description>
+    </item>
+    
+    <item>
+      <title>关于lambda表达式和Stream API的思考</title>
+      <link>https://https://isaacrolo.github.io/post/java8/</link>
+      <pubDate>Wed, 12 Jun 2019 16:46:30 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/java8/</guid>
+      <description>Lambda表达式 语法格式 （抽象方法的参数列表）-&amp;gt; {抽象方法的实现} 首先来看看我们能在什么地方使用lambda表达式？ 任何需要函数式接口的地方，都可以传入lambda表达式来代替匿名内部类 Thread构造函数中的Runnable接口 Thread thread=new Thread(new Runnable(){}); 给集合排序的Comparator</description>
+    </item>
+    
+    <item>
+      <title>Cookie_session</title>
+      <link>https://https://isaacrolo.github.io/post/cookie_session/</link>
+      <pubDate>Mon, 20 May 2019 19:30:33 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/cookie_session/</guid>
+      <description>为什么在2个服务器之间来回请求，同一个服务器的sessionId会找不到 第一次请求【服务器A】 Response Headers Set-Cookie: JSESSIONID=4A8E119166F37F26FF1D8ACF38F9742C;path=/;HttpOnly 第二次请求【服务器B】 Response Headers Set-Cookie: JSESSIONID=1A08F620F659F860BF599FD37A51DCDD;path=/;HttpOnly Request Headers Cookie: JSESSIONID=4A8E119166F37F26FF1D8ACF38F9742C 第三次请求【服务器A】 Response Headers Set-Cookie: JSESSIONID=25F872DEA8145E2A6811ED212038478B;path=/;HttpOnly Request Headers Cookie: JSESSIONID=1A08F620F659F860BF599FD37A51DCDD 服务端找不到cookie中的jsessionid，会创建新的session，并把sessionId存到</description>
+    </item>
+    
+    <item>
+      <title>Java爬虫—Jsoup</title>
+      <link>https://https://isaacrolo.github.io/post/jsoup/</link>
+      <pubDate>Wed, 24 Apr 2019 14:05:11 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/jsoup/</guid>
+      <description>选择器的使用 基本用法 tagname 使用标签名来定位，例如 a ns|tag 使用命名空间的标签定位，例如 fb:name 来查找 fb:name 元素 #id 使用元素 id 定位，例如 #logo .class 使用元素的 class 属性定位，例如 .head [attribute] 使用元素的属性进行定位，例如 [href] 表示检索具有 href 属性的所有元素 [^attr] 使用元素的属性名前缀进行定位，例如 [^data-] 用来查找 HTML5 的 dataset 属性 [attr=value] 使用属性值进行定位</description>
+    </item>
+    
+    <item>
+      <title>整合Zuul</title>
+      <link>https://https://isaacrolo.github.io/post/zuul/</link>
+      <pubDate>Wed, 20 Mar 2019 13:46:10 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/zuul/</guid>
+      <description>场景：仅作为web服务集群与外界请求之间的网关，和Nginx结合使用 Zuul的使用 添加依赖 1 2 3 4 5 6 7 8 9 &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;org.springframework.cloud&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;spring-cloud-starter-zuul&amp;lt;/artifactId&amp;gt; &amp;lt;/dependency&amp;gt; &amp;lt;dependency&amp;gt; &amp;lt;groupId&amp;gt;org.springframework.cloud&amp;lt;/groupId&amp;gt; &amp;lt;artifactId&amp;gt;spring-cloud-starter-eureka&amp;lt;/artifactId&amp;gt; &amp;lt;/dependency&amp;gt; 配置文件 将Zuul注册到eureka server上，实现对serviceId的映射 1 2 3 4 5 6 7 8 9 10 11 12 13 14 server:port:8032spring:application:name:microservice-zuuleureka:client:service-url:defaultZone:http://localhost:8761/eurekazuul:routes:web:path:/web/**serviceId:microservice-web 启动类 1 @EnableZuulProxy 访问http://localhos</description>
+    </item>
+    
+    <item>
+      <title>SpringBoot 迁移</title>
+      <link>https://https://isaacrolo.github.io/post/springboot-transfer/</link>
+      <pubDate>Tue, 19 Mar 2019 13:50:30 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/springboot-transfer/</guid>
+      <description>SpringBoot使用jsp作为模板引擎 Maven构建的多module SpringBoot服务打包方式 不应该给 parent 项目添加 spring-boot-maven-plugin 构建插件（该插件会将依赖的jar包都打包进去），而应该给终端项目使用，因为这个插件的 repackage 目标会处理 jar 包，导致依赖它的模块无法使用它。 多模块 Spring Boot 项目 mvn package 失败的解</description>
+    </item>
+    
+    <item>
+      <title>整合HystrixDashboard和Turbine</title>
+      <link>https://https://isaacrolo.github.io/post/HystrixDashboard/</link>
+      <pubDate>Tue, 19 Mar 2019 11:32:32 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/HystrixDashboard/</guid>
+      <description>前提：springboot 1.5.19.RELEASE springcloud Edgware.SR5 场景：服务调用方使用Feign+Hystrix实现微服务之间的通信；新建一个Hystrix Dashboard微服务来实现Hystrix的实时监控 Hystrix Dashboard服务 实时监控Hystrix ，可以直观的查看各Hystrix Command的请求响应时</description>
+    </item>
+    
+    <item>
+      <title>Tableau可视化图表集成</title>
+      <link>https://https://isaacrolo.github.io/post/tableau/</link>
+      <pubDate>Mon, 11 Mar 2019 10:09:51 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/tableau/</guid>
+      <description>Tableau Desktop10.4安装 Tableau Server10.4安装 输入密钥激活 desktop和server 安装完成后浏览器输入http://127.0.0.1 进入服务器管理后台 tableau历史版本下载 发布工作簿 Tableau Desktop中选择服务器选项卡-&amp;gt;发布工作簿-&amp;gt;输入Tablea</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+
+    <title>Java爬虫—Jsoup | Rolo的日常</title>
+    <meta property="og:title" content="Java爬虫—Jsoup - Rolo的日常">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-04-24T14:05:11&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-04-24T14:05:11&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,go语言,go语言笔记,飞雪无情,java,android,博客,项目管理,python,软件架构,公众号,小程序">
+    <meta name="description" content="Java爬虫—Jsoup">
+        
+    <meta name="author" content="Rolo">
+    <meta property="og:url" content="https://https://isaacrolo.github.io/post/jsoup/">
+    <link rel="shortcut icon" href='/isaacrolo.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/douban.css'>
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/other.css'>
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://https://isaacrolo.github.io/">
+                        Rolo的日常
+                    </a>
+                
+                <p class="description">Laziness, Impatience, and Hubris</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="https://https://isaacrolo.github.io/">首页</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/system/" title="知识体系">知识体系</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/archives/" title="归档">归档</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#选择器的使用">选择器的使用</a></li>
+        <li><a href="#爬虫遇到的坑">爬虫遇到的坑</a></li>
+        <li><a href="#参考资料">参考资料</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">Java爬虫—Jsoup</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年4月24日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/isaacrolo.github.io/categories/'></a></span>
+            
+        </div>
+        
+        
+        <div class="post-meta">
+            <span id="busuanzi_container_page_pv">|<span id="busuanzi_value_page_pv"></span><span>
+                    阅读</span></span>
+        </div>
+        
+        
+        <div class="post-content">
+            <h3 id="选择器的使用">选择器的使用</h3>
+<ul>
+<li>
+<p>基本用法</p>
+<table>
+<thead>
+<tr>
+<th>tagname</th>
+<th>使用标签名来定位，例如 a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ns|tag</strong></td>
+<td>使用命名空间的标签定位，例如 fb:name 来查找 <a href="fb:name">fb:name</a> 元素</td>
+</tr>
+<tr>
+<td><strong>#id</strong></td>
+<td>使用元素 id 定位，例如 #logo</td>
+</tr>
+<tr>
+<td><strong>.class</strong></td>
+<td>使用元素的 class 属性定位，例如 .head</td>
+</tr>
+<tr>
+<td><strong>[attribute]</strong></td>
+<td>使用元素的属性进行定位，例如 [href] 表示检索具有 href 属性的所有元素</td>
+</tr>
+<tr>
+<td><strong>[^attr]</strong></td>
+<td>使用元素的属性名前缀进行定位，例如 [^data-] 用来查找 HTML5 的 dataset 属性</td>
+</tr>
+<tr>
+<td><strong>[attr=value]</strong></td>
+<td>使用属性值进行定位，例如 [width=500] 定位所有 width 属性值为 500 的元素</td>
+</tr>
+<tr>
+<td><strong>[attr^=value], [attr$=value], [attr*=value]</strong></td>
+<td>这三个语法分别代表，属性以 value 开头、结尾以及包含</td>
+</tr>
+<tr>
+<td><strong>[attr~=regex]</strong></td>
+<td>使用正则表达式进行属性值的过滤，例如 img[src~=(?i).(png|jpe?g)]</td>
+</tr>
+<tr>
+<td>*****</td>
+<td>定位所有元素</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>组合用法</p>
+<table>
+<thead>
+<tr>
+<th>el#id</th>
+<th>定位 id 值某个元素，例如 a#logo -&gt; <!-- raw HTML omitted --></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>el.class</strong></td>
+<td>定位 class 为指定值的元素，例如 div.head -&gt; <!-- raw HTML omitted -->xxxx<!-- raw HTML omitted --></td>
+</tr>
+<tr>
+<td><strong>el[attr]</strong></td>
+<td>定位所有定义了某属性的元素，例如 a[href]</td>
+</tr>
+<tr>
+<td><strong>以上三个任意组合</strong></td>
+<td>例如 a[href]#logo 、a[name].outerlink</td>
+</tr>
+<tr>
+<td><strong>ancestor child</strong></td>
+<td>这五种都是元素之间组合关系的选择器语法，其中包括父子关系、合并关系和层次关系。</td>
+</tr>
+<tr>
+<td><strong>parent &gt; child</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>siblingA + siblingB</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>siblingA ~ siblingX</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>el, el, el</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>表达式(使用表达式进行元素过滤选择)</p>
+<table>
+<thead>
+<tr>
+<th>:lt(n)</th>
+<th>例如 td:lt(3) 表示 小于三列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>:gt(n)</strong></td>
+<td>div p:gt(2) 表示 div 中包含 2 个以上的 p</td>
+</tr>
+<tr>
+<td><strong>:eq(n)</strong></td>
+<td>form input:eq(1) 表示只包含一个 input 的表单</td>
+</tr>
+<tr>
+<td><strong>:has(seletor)</strong></td>
+<td>div:has(p) 表示包含了 p 元素的 div</td>
+</tr>
+<tr>
+<td><strong>:not(selector)</strong></td>
+<td>div:not(.logo) 表示不包含 class=logo 元素的所有 div 列表</td>
+</tr>
+<tr>
+<td><strong>:contains(text)</strong></td>
+<td>包含某文本的元素，不区分大小写，例如 p:contains(oschina)</td>
+</tr>
+<tr>
+<td><strong>:containsOwn(text)</strong></td>
+<td>文本信息完全等于指定条件的过滤</td>
+</tr>
+<tr>
+<td><strong>:matches(regex)</strong></td>
+<td>使用正则表达式进行文本过滤：div:matches((?i)login)</td>
+</tr>
+<tr>
+<td><strong>:matchesOwn(regex)</strong></td>
+<td>使用正则表达式找到自身的文本</td>
+</tr>
+</tbody>
+</table>
+</li>
+</ul>
+<h3 id="爬虫遇到的坑">爬虫遇到的坑</h3>
+<ol>
+<li>
+<p>div的id是动态的,如何取到对应div的element?</p>
+<p>前缀匹配属性名: div[class^=cell from_]</p>
+<p>正则匹配属性名: div[class~=cell from_\d\d\d\d\d\d]</p>
+<p>匹配到的div有多个(Elements),遍历得到Element,再使用选择器获取div内部的元素</p>
+</li>
+<li>
+<p>选择器解析html可以不用从根DOM节点开始解析，可以直接找有特殊属性的节点</p>
+<p><code>body &gt; div[id=wrapper] &gt; div.content &gt; div[id=Rightbar] &gt; div[id=TopicsHot] &gt;div.cell &gt;span</code></p>
+<p><code>div[id=TopicsHot] &gt;div.cell &gt;span</code></p>
+</li>
+<li>
+<p>选择器解析html时要按照dom树的层级进行选择，不能越级</p>
+</li>
+<li>
+<p>动态生成的数据（js，jq，ajax）无法获取</p>
+<p>找到对应异步请求的url，再次发送请求获取需要的数据</p>
+<p>**ps：**下载图片时可能会遇到HTTP 403 Forbidden错误（表示资源不可用）</p>
+<p>原因：网站验证用户了是从哪个页面转来的，直接访问会被拒绝；抓包可以看到http请求头中的Referer字段，可以防止盗链</p>
+<p>解决方法：下载图片时，伪造Referer字段</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java">URL url <span style="color:#000;font-weight:bold">=</span> <span style="color:#000;font-weight:bold">new</span> URL<span style="color:#000;font-weight:bold">(</span>imgUrl<span style="color:#000;font-weight:bold">);</span>
+URLConnection urlConnection <span style="color:#000;font-weight:bold">=</span> url<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">openConnection</span><span style="color:#000;font-weight:bold">();</span>
+urlConnection<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">setRequestProperty</span><span style="color:#000;font-weight:bold">(</span><span style="color:#d14">&#34;Referer&#34;</span><span style="color:#000;font-weight:bold">,</span><span style="color:#d14">&#34;https://www.xxxx.com&#34;</span><span style="color:#000;font-weight:bold">);</span>
+bufferedInputStream <span style="color:#000;font-weight:bold">=</span> <span style="color:#000;font-weight:bold">new</span> BufferedInputStream<span style="color:#000;font-weight:bold">(</span>urlConnection<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">getInputStream</span><span style="color:#000;font-weight:bold">());</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><a href="https://www.jb51.net/article/113502.htm">https://www.jb51.net/article/113502.htm</a></p>
+<p><a href="https://www.iteye.com/problems/102500">https://www.iteye.com/problems/102500</a></p>
+</li>
+</ol>
+<h3 id="参考资料">参考资料</h3>
+<p><a href="https://jsoup.org/apidocs/org/jsoup/select/Selector.html">jsoup官方API</a></p>
+<p><a href="https://www.ibm.com/developerworks/cn/java/j-lo-jsouphtml/">https://www.ibm.com/developerworks/cn/java/j-lo-jsouphtml/</a></p>
+<p><a href="https://www.liaoxuefeng.com/wiki/001374738125095c955c1e6d8bb493182103fac9270762a000/001386832260566c26442c671fa489ebc6fe85badda25cd000">正则表达式</a></p>
+<p><a href="https://github.com/doocs/spider">爬虫项目参考</a></p>
+
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="https://https://isaacrolo.github.io/">Rolo</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="https://https://isaacrolo.github.io/post/jsoup/">https://https://isaacrolo.github.io/post/jsoup/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/isaacrolo.github.io/post/zuul/">整合Zuul</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/springboot-transfer/">SpringBoot 迁移</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/HystrixDashboard/">整合HystrixDashboard和Turbine</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/tableau/">Tableau可视化图表集成</a></li>
+        
+        <li><a href="/isaacrolo.github.io/system/"></a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/isaacrolo.github.io/tags/Java'>Java</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://https://isaacrolo.github.io/">Rolo的日常 By Rolo</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/isaacrolo.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+    <script type="text/javascript" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+
+
+
+    <script src='/isaacrolo.github.io/js/douban.js'></script>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='https://https:/isaacrolo.github.io/search/' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://https://isaacrolo.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/" title="Mysql索引原理与优化">Mysql索引原理与优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/" title="区块链入门">区块链入门</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/work-tips/" title="一份工作中最重要的5个要素">一份工作中最重要的5个要素</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/" title="高性能 MySQL ｜ MySQL 逻辑架构">高性能 MySQL ｜ MySQL 逻辑架构</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ Schema 与数据类型优化">高性能 MySQL ｜ Schema 与数据类型优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/" title="高性能 MySQL ｜ 创建高性能的索引">高性能 MySQL ｜ 创建高性能的索引</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ 查询性能优化">高性能 MySQL ｜ 查询性能优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/16s/" title="魅族16s使用半年有感">魅族16s使用半年有感</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/SQLInjection/" title="关于防止sql注入的思考">关于防止sql注入的思考</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Hadoop/" title="Hadoop">Hadoop</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Database/">Database (6)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Spring-Cloud/">Spring Cloud (2)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/web/">web (1)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://https://isaacrolo.github.io/tags/BlockChain/">BlockChain</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Elasticsearch/">Elasticsearch</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Java/">Java</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/MySQL/">MySQL </a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Redis/">Redis</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Boot/">Spring Boot</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Cloud/">Spring Cloud</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Tableau/">Tableau</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/web/">web</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E7%BD%91%E7%BB%9C/">网络</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://https:/isaacrolo.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
