@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+
+    <title>Tableau可视化图表集成 | Rolo的日常</title>
+    <meta property="og:title" content="Tableau可视化图表集成 - Rolo的日常">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2019-03-11T10:09:51&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2019-03-11T10:09:51&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,go语言,go语言笔记,飞雪无情,java,android,博客,项目管理,python,软件架构,公众号,小程序">
+    <meta name="description" content="Tableau可视化图表集成">
+        
+    <meta name="author" content="Rolo">
+    <meta property="og:url" content="https://https://isaacrolo.github.io/post/tableau/">
+    <link rel="shortcut icon" href='/isaacrolo.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/douban.css'>
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/other.css'>
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://https://isaacrolo.github.io/">
+                        Rolo的日常
+                    </a>
+                
+                <p class="description">Laziness, Impatience, and Hubris</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="https://https://isaacrolo.github.io/">首页</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/system/" title="知识体系">知识体系</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/archives/" title="归档">归档</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#tableau-desktop104安装">Tableau Desktop10.4安装</a></li>
+        <li><a href="#tableau-server104安装">Tableau Server10.4安装</a></li>
+        <li><a href="#发布工作簿">发布工作簿</a></li>
+        <li><a href="#将tableau视图嵌入页面">将tableau视图嵌入页面</a></li>
+        <li><a href="#整体思路">整体思路</a></li>
+        <li><a href="#问题">问题</a></li>
+        <li><a href="#硬件配置要求">硬件配置要求</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">Tableau可视化图表集成</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2019年3月11日
+        </date>
+        
+        
+        <div class="post-meta">
+            <span id="busuanzi_container_page_pv">|<span id="busuanzi_value_page_pv"></span><span>
+                    阅读</span></span>
+        </div>
+        
+        
+        <div class="post-content">
+            <h3 id="tableau-desktop104安装">Tableau Desktop10.4安装</h3>
+<h3 id="tableau-server104安装">Tableau Server10.4安装</h3>
+<p>输入密钥激活 desktop和server</p>
+<p>安装完成后浏览器输入http://127.0.0.1 进入服务器管理后台</p>
+<p><a href="https://www.tableau.com/zh-cn/support/releases?_fsi=gPjLkNcU">tableau历史版本下载</a></p>
+<h3 id="发布工作簿">发布工作簿</h3>
+<p>Tableau Desktop中选择服务器选项卡-&gt;发布工作簿-&gt;输入Tableau Server服务器的ip-&gt;发布</p>
+<h3 id="将tableau视图嵌入页面">将tableau视图嵌入页面</h3>
+<ol>
+<li>
+<p>浏览器输入http://serverip 进入服务器管理后台</p>
+</li>
+<li>
+<p>内容选项卡-&gt;工作簿 选择刚刚发布的工作簿-&gt;选择要在页面展示的视图-&gt; 点击右上角共享选项卡 -&gt;复制嵌入代码或链接</p>
+</li>
+<li>
+<p>官方支持的2种方式展示</p>
+<p><a href="https://onlinehelp.tableau.com/current/pro/desktop/zh-cn/embed.htm">如何将视图嵌入网页</a></p>
+<p>1）嵌入代码</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#000;font-weight:bold">&lt;</span>script type<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;text/javascript&#39;</span> src<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;http://127.0.0.1/javascripts/api/viz_v1.js&#39;</span><span style="color:#000;font-weight:bold">&gt;&lt;</span><span style="color:#a61717;background-color:#e3d2d2">/script&gt;</span>
+<span style="color:#000;font-weight:bold">&lt;</span>div <span style="color:#000;font-weight:bold">class</span><span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;tableauPlaceholder&#39;</span> style<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;width: 1920px; height: 848px;&#39;</span><span style="color:#000;font-weight:bold">&gt;</span>
+    <span style="color:#000;font-weight:bold">&lt;</span>object <span style="color:#000;font-weight:bold">class</span><span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;tableauViz&#39;</span> width<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;1920&#39;</span> height<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;848&#39;</span> style<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;display:none;&#39;</span><span style="color:#000;font-weight:bold">&gt;</span>
+        <span style="color:#000;font-weight:bold">&lt;</span>param name<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;host_url&#39;</span> value<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;http%3A%2F%2F127.0.0.1%2F&#39;</span><span style="color:#000;font-weight:bold">/&gt;</span>
+        <span style="color:#000;font-weight:bold">&lt;</span>param name<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;embed_code_version&#39;</span> value<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;3&#39;</span><span style="color:#000;font-weight:bold">/&gt;</span>
+        <span style="color:#000;font-weight:bold">&lt;</span>param name<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;site_root&#39;</span> value<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;&#39;</span><span style="color:#000;font-weight:bold">/&gt;</span>
+        <span style="color:#000;font-weight:bold">&lt;</span>param name<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;name&#39;</span> value<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;_0&amp;#47;sheet2&#39;</span><span style="color:#000;font-weight:bold">/&gt;</span>
+        <span style="color:#000;font-weight:bold">&lt;</span>param name<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;tabs&#39;</span> value<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;no&#39;</span><span style="color:#000;font-weight:bold">/&gt;</span>
+        <span style="color:#000;font-weight:bold">&lt;</span>param name<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;toolbar&#39;</span> value<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;yes&#39;</span><span style="color:#000;font-weight:bold">/&gt;</span>
+        <span style="color:#000;font-weight:bold">&lt;</span>param name<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;showAppBanner&#39;</span> value<span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#39;false&#39;</span><span style="color:#000;font-weight:bold">/&gt;</span>
+    <span style="color:#000;font-weight:bold">&lt;</span><span style="color:#a61717;background-color:#e3d2d2">/object&gt;</span>
+<span style="color:#000;font-weight:bold">&lt;</span><span style="color:#a61717;background-color:#e3d2d2">/div&gt;</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>2）指定视图 URL</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#000080">a</span> <span style="color:#008080">href</span><span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#34;http://127.0.0.1/views/_0/sheet2?:embed=y&amp;:showAppBanner=false&amp;:display_count=no&amp;:showVizHome=no&#34;</span>&gt;tableau&lt;/<span style="color:#000080">a</span>&gt;
+</code></pre></td></tr></table>
+</div>
+</div><p>3）修改嵌入式视图样式</p>
+<p><a href="https://onlinehelp.tableau.com/current/pro/desktop/zh-cn/embed_list.htm">定制嵌入代码的参数</a></p>
+</li>
+</ol>
+<h3 id="整体思路">整体思路</h3>
+<p>在Tableau Desktop中绘制分析图表，将图表发布到Tableau Server中，页面进行引用</p>
+<h3 id="问题">问题</h3>
+<ol>
+<li><strong>第一次访问时需要登陆tableau，需要进行身份验证</strong></li>
+</ol>
+<p>是否需要免身份验证？</p>
+<p><a href="https://onlinehelp.tableau.com/current/server/zh-cn/trusted_auth_webrequ.htm">官方身份认证教程</a></p>
+<p><strong><a href="https://onlinehelp.tableau.com/v10.4/server/zh-cn/trusted_auth_webrequ.htm">10.4版本身份认证官方教程</a></strong></p>
+<p><a href="https://blog.csdn.net/gwd1154978352/article/details/82664992">获取ticket后跳转到tableau页面</a></p>
+<p><strong>解决思路</strong>：</p>
+<p>
+        <img class="mx-auto" alt="UTOOLS1552288058853.png" src="https://i.loli.net/2019/03/11/5c86093da17df.png" />   
+    </p>
+<p>1）向 Tableau Server 添加受信任的 IP 地址或主机名称</p>
+<p>以管理员身份打开命令提示符 ，导航到 Tableau Server 的 bin 目录</p>
+<p><code>cd  C:\Program Files\Tableau\Tableau Server\10.4\bin </code></p>
+<p><code>tabadmin stop</code></p>
+<p><code>tabadmin set wgserver.trusted_hosts &quot;&lt;trusted IP addresses or host names&gt;&quot; </code></p>
+<p><code>tabadmin config</code></p>
+<p><code>tabadmin start</code></p>
+<p>2）在页面中使用嵌入式视图</p>
+<p>3）向Tableau Server发送post请求获取票证 ticket</p>
+<ul>
+<li>
+<p>编写java工具类发送http请求，使用RestTemplate 或 httpclient</p>
+</li>
+<li>
+<p>POST请求发送到https://tabserver/trusted；参数为<code>username=&lt;username&gt;</code></p>
+</li>
+<li>
+<p>HTTP请求头中设置 <code>Content-Type </code>类型为 <code>application/x-www-form-urlencoded;charset=UTF-8</code></p>
+<p><strong>Post请求获取Ticket代码示例（RestTemplate ）</strong></p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 1
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 2
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 3
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 4
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 5
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 6
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 7
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 8
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f"> 9
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">10
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">11
+</span><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">12
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#000;font-weight:bold">static</span> <span style="color:#000;font-weight:bold">public</span> String <span style="color:#900;font-weight:bold">getTicket</span><span style="color:#000;font-weight:bold">()</span> <span style="color:#000;font-weight:bold">{</span>
+    String url <span style="color:#000;font-weight:bold">=</span> <span style="color:#d14">&#34;http://127.0.0.1/trusted&#34;</span><span style="color:#000;font-weight:bold">;</span>
+    RestTemplate restTemplate <span style="color:#000;font-weight:bold">=</span> <span style="color:#000;font-weight:bold">new</span> RestTemplate<span style="color:#000;font-weight:bold">();</span>
+    HttpHeaders headers <span style="color:#000;font-weight:bold">=</span> <span style="color:#000;font-weight:bold">new</span> HttpHeaders<span style="color:#000;font-weight:bold">();</span>
+    headers<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">setContentType</span><span style="color:#000;font-weight:bold">(</span>MediaType<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">APPLICATION_FORM_URLENCODED</span><span style="color:#000;font-weight:bold">);</span>
+    MultiValueMap<span style="color:#000;font-weight:bold">&lt;</span>String<span style="color:#000;font-weight:bold">,</span> String<span style="color:#000;font-weight:bold">&gt;</span> params <span style="color:#000;font-weight:bold">=</span> <span style="color:#000;font-weight:bold">new</span> LinkedMultiValueMap<span style="color:#000;font-weight:bold">&lt;&gt;();</span>
+    params<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">add</span><span style="color:#000;font-weight:bold">(</span><span style="color:#d14">&#34;username&#34;</span><span style="color:#000;font-weight:bold">,</span> <span style="color:#d14">&#34;admin&#34;</span><span style="color:#000;font-weight:bold">);</span>
+    HttpEntity<span style="color:#000;font-weight:bold">&lt;</span>MultiValueMap<span style="color:#000;font-weight:bold">&lt;</span>String<span style="color:#000;font-weight:bold">,</span> String<span style="color:#000;font-weight:bold">&gt;&gt;</span> requestEntity <span style="color:#000;font-weight:bold">=</span> <span style="color:#000;font-weight:bold">new</span> HttpEntity<span style="color:#000;font-weight:bold">&lt;&gt;(</span>params<span style="color:#000;font-weight:bold">,</span> headers<span style="color:#000;font-weight:bold">);</span>
+    String ticket <span style="color:#000;font-weight:bold">=</span> restTemplate<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">postForObject</span><span style="color:#000;font-weight:bold">(</span>url<span style="color:#000;font-weight:bold">,</span> requestEntity<span style="color:#000;font-weight:bold">,</span> String<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">class</span><span style="color:#000;font-weight:bold">);</span>
+    System<span style="color:#000;font-weight:bold">.</span><span style="color:#008080">out</span><span style="color:#000;font-weight:bold">.</span><span style="color:#008080">println</span><span style="color:#000;font-weight:bold">(</span>ticket<span style="color:#000;font-weight:bold">);</span>
+    <span style="color:#000;font-weight:bold">return</span> ticket<span style="color:#000;font-weight:bold">;</span>
+<span style="color:#000;font-weight:bold">}</span>
+</code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<p>4）在controller中获取到ticket后，传给前端设置ticket参数的值</p>
+<div class="highlight"><div style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">
+<table style="border-spacing:0;padding:0;margin:0;border:0;width:auto;overflow:auto;display:block;"><tr><td style="vertical-align:top;padding:0;margin:0;border:0;">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code><span style="margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1
+</span></code></pre></td>
+<td style="vertical-align:top;padding:0;margin:0;border:0;;width:100%">
+<pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#000080">param</span> <span style="color:#008080">name</span><span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#34;ticket&#34;</span> <span style="color:#008080">value</span><span style="color:#000;font-weight:bold">=</span><span style="color:#d14">&#34;9D1ObyqDQmSIOyQpKdy4Sw==:dg62gCsSE0QRArXNTOp6mlJ5&#34;</span> /&gt;
+</code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>
+<p>图表数据的实时性</p>
+<p>重新发布后数据才会更新</p>
+</li>
+<li>
+<p>Tableau Server是否支持集群部署？</p>
+<p>至少需要三个节点来运行协调服务</p>
+<p><a href="https://onlinehelp.tableau.com/current/server/zh-cn/server_hardware_min.htm">使用仅协调服务节点配置 Tableau Server 以实现高可用性</a></p>
+</li>
+<li>
+<p><strong>如何实现系统不同的用户登陆，内嵌Tableau图表分角色显示数据</strong></p>
+<p>1）设置用户筛选器，分用户（用户为Tableau Server创建的用户）查看数据</p>
+<p>步骤：服务器选项卡-&gt;创建用户筛选器-&gt;选择要筛选的维度-&gt;勾选<strong>用户筛选的维度</strong>（见下图）-&gt;发布工作簿</p>
+<p><strong>注</strong>：发布工作簿之前要拖动筛选器到筛选器选项卡</p>
+<p>
+        <img class="mx-auto" alt="UTOOLS1553847731647.png" src="https://i.loli.net/2019/03/29/5c9dd5b3d4377.png" />   
+    </p>
+<p><a href="https://onlinehelp.tableau.com/current/pro/desktop/zh-cn/publish_userfilters_create.htm">创建用户筛选器官方教程</a></p>
+<p><a href="http://www.jintiankansha.me/t/tO9GtKce50">如何设置用户筛选器</a></p>
+<p>2）系统用户与Tableau用户之间的关联</p>
+<p>通过代码的方式来对2种用户进行关联；即系统登陆时获取对应Tableau用户的Ticket凭证，就可以以指定用户的身份登陆到Tableau Server</p>
+</li>
+</ol>
+<h3 id="硬件配置要求">硬件配置要求</h3>
+<table>
+<thead>
+<tr>
+<th><em>安装类型</em></th>
+<th><em>处理器</em></th>
+<th><em>CPU</em></th>
+<th><em>RAM</em></th>
+<th><em>可用磁盘空间</em></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单节点</td>
+<td>64 位</td>
+<td>8 核，2.0 GHz 或更高频率</td>
+<td>32 GB</td>
+<td>50 GB</td>
+</tr>
+<tr>
+<td><strong>最低</strong>硬件要求</td>
+<td>64 位</td>
+<td>2 内核</td>
+<td>8 GB</td>
+<td>15 GB</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://onlinehelp.tableau.com/current/server/zh-cn/server_hardware_min.htm">官方最低硬件推荐配置</a></p>
+
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="https://https://isaacrolo.github.io/">Rolo</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="https://https://isaacrolo.github.io/post/tableau/">https://https://isaacrolo.github.io/post/tableau/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/isaacrolo.github.io/system/"></a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/vps-note/"></a></li>
+        
+        <li><a href="/isaacrolo.github.io/about/">About</a></li>
+        
+        <li><a href="/isaacrolo.github.io/archives/">归档</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/isaacrolo.github.io/tags/Tableau'>Tableau</a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://https://isaacrolo.github.io/">Rolo的日常 By Rolo</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/isaacrolo.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+    <script type="text/javascript" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+
+
+
+    <script src='/isaacrolo.github.io/js/douban.js'></script>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='https://https:/isaacrolo.github.io/search/' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://https://isaacrolo.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/" title="Mysql索引原理与优化">Mysql索引原理与优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/" title="区块链入门">区块链入门</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/work-tips/" title="一份工作中最重要的5个要素">一份工作中最重要的5个要素</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/" title="高性能 MySQL ｜ MySQL 逻辑架构">高性能 MySQL ｜ MySQL 逻辑架构</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ Schema 与数据类型优化">高性能 MySQL ｜ Schema 与数据类型优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/" title="高性能 MySQL ｜ 创建高性能的索引">高性能 MySQL ｜ 创建高性能的索引</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ 查询性能优化">高性能 MySQL ｜ 查询性能优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/16s/" title="魅族16s使用半年有感">魅族16s使用半年有感</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/SQLInjection/" title="关于防止sql注入的思考">关于防止sql注入的思考</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Hadoop/" title="Hadoop">Hadoop</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Database/">Database (6)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Spring-Cloud/">Spring Cloud (2)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/web/">web (1)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://https://isaacrolo.github.io/tags/BlockChain/">BlockChain</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Elasticsearch/">Elasticsearch</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Java/">Java</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/MySQL/">MySQL </a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Redis/">Redis</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Boot/">Spring Boot</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Cloud/">Spring Cloud</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Tableau/">Tableau</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/web/">web</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E7%BD%91%E7%BB%9C/">网络</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://https:/isaacrolo.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

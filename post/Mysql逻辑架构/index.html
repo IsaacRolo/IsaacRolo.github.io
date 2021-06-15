@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    
+
+    <title>高性能 MySQL ｜ MySQL 逻辑架构 | Rolo的日常</title>
+    <meta property="og:title" content="高性能 MySQL ｜ MySQL 逻辑架构 - Rolo的日常">
+    <meta property="og:type" content="article">
+        
+    <meta property="article:published_time" content='2021-02-11T21:11:13&#43;08:00'>
+        
+        
+    <meta property="article:modified_time" content='2021-02-11T21:11:13&#43;08:00'>
+        
+    <meta name="Keywords" content="golang,go语言,go语言笔记,飞雪无情,java,android,博客,项目管理,python,软件架构,公众号,小程序">
+    <meta name="description" content="高性能 MySQL ｜ MySQL 逻辑架构">
+        
+    <meta name="author" content="Rolo">
+    <meta property="og:url" content="https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/">
+    <link rel="shortcut icon" href='/isaacrolo.github.io/favicon.ico'  type="image/x-icon">
+
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/normalize.css'>
+    <link rel="stylesheet" href='/isaacrolo.github.io/css/style.css'>
+    <script type="text/javascript" src="//cdn.bootcdn.net/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    
+    
+    
+    
+    
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/douban.css'>
+    
+        <link rel="stylesheet" href='/isaacrolo.github.io/css/other.css'>
+    
+</head>
+
+
+<body>
+    <header id="header" class="clearfix">
+    <div class="container">
+        <div class="col-group">
+            <div class="site-name ">
+                
+                    <a id="logo" href="https://https://isaacrolo.github.io/">
+                        Rolo的日常
+                    </a>
+                
+                <p class="description">Laziness, Impatience, and Hubris</p>
+            </div>
+            <div>
+                <nav id="nav-menu" class="clearfix">
+                    <a class="current" href="https://https://isaacrolo.github.io/">首页</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/system/" title="知识体系">知识体系</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/archives/" title="归档">归档</a>
+                    
+                    <a  href="https://https:/isaacrolo.github.io/about/" title="关于">关于</a>
+                    
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div id="body">
+        <div class="container">
+            <div class="col-group">
+
+                <div class="col-8" id="main">
+                    
+<div class="res-cons">
+    <style type="text/css">
+    .post-toc {
+        position: fixed;
+        width: 200px;
+        margin-left: -210px;
+        padding: 5px 10px;
+        font-family: Athelas, STHeiti, Microsoft Yahei, serif;
+        font-size: 12px;
+        border: 1px solid rgba(0, 0, 0, .07);
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.98);
+        background-clip: padding-box;
+        -webkit-box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, .125);
+        word-wrap: break-word;
+        white-space: nowrap;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        z-index: 999;
+        cursor: pointer;
+        max-height: 70%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .post-toc .post-toc-title {
+        width: 100%;
+        margin: 0 auto;
+        font-size: 20px;
+        font-weight: 400;
+        text-transform: uppercase;
+        text-align: center;
+    }
+
+    .post-toc .post-toc-content {
+        font-size: 15px;
+    }
+
+    .post-toc .post-toc-content>nav>ul {
+        margin: 10px 0;
+    }
+
+    .post-toc .post-toc-content ul {
+        padding-left: 20px;
+        list-style: square;
+        margin: 0.5em;
+        line-height: 1.8em;
+    }
+
+    .post-toc .post-toc-content ul ul {
+        padding-left: 15px;
+        display: none;
+    }
+
+    @media print,
+    screen and (max-width:1057px) {
+        .post-toc {
+            display: none;
+        }
+    }
+</style>
+<div class="post-toc" style="position: absolute; top: 188px;">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#一逻辑架构">一、逻辑架构</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+    <li><a href="#二并发控制">二、并发控制</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+    <li><a href="#三事物">三、事物</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+    <li><a href="#四多版本并发控制mvcc">四、多版本并发控制（MVCC）</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+    <li><a href="#五存储引擎">五、存储引擎</a>
+      <ul>
+        <li></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var postToc = $(".post-toc");
+        if (postToc.length) {
+            var leftPos = $("#main").offset().left;
+            if(leftPos<220){
+                postToc.css({"width":leftPos-10,"margin-left":(0-leftPos)})
+            }
+
+            var t = postToc.offset().top - 20,
+                a = {
+                    start: {
+                        position: "absolute",
+                        top: t
+                    },
+                    process: {
+                        position: "fixed",
+                        top: 20
+                    },
+                };
+            $(window).scroll(function () {
+                var e = $(window).scrollTop();
+                e < t ? postToc.css(a.start) : postToc.css(a.process)
+            })
+        }
+    })
+</script>
+    <article class="post">
+        <header>
+            <h1 class="post-title">高性能 MySQL ｜ MySQL 逻辑架构</h1>
+        </header>
+        <date class="post-meta meta-date">
+            2021年2月11日
+        </date>
+        
+        <div class="post-meta">
+            <span>|</span>
+            
+            <span class="meta-category"><a href='/isaacrolo.github.io/categories/Database'>Database</a></span>
+            
+        </div>
+        
+        
+        <div class="post-meta">
+            <span id="busuanzi_container_page_pv">|<span id="busuanzi_value_page_pv"></span><span>
+                    阅读</span></span>
+        </div>
+        
+        
+        <div class="post-content">
+            <h1 id="高性能-mysql--mysql-逻辑架构">高性能 MySQL ｜ MySQL 逻辑架构</h1>
+<p>MySQL 的逻辑架构分为三层,客户端,服务器,存储引擎。</p>
+<h2 id="一逻辑架构">一、逻辑架构</h2>
+<p><a href="https://md.ulovecode.com/static/images/posts/mysql-structure-01.png">
+        <img class="mx-auto" alt="架构图" src="https://md.ulovecode.com/static/images/posts/mysql-structure-01.png" />   
+    </a></p>
+<p><a href="https://md.ulovecode.com/static/images/posts/mysql-structure-01.png">架构图</a></p>
+<h4 id="1客户端">1.客户端</h4>
+<p>第一层负责连接管理、授权认证、安全等等。每个客户端的连接都对应着服务器上的一个线程。服务器上维护了一个线程池,避免为每个连接都创建销毁一个线程。当客户端连接到MySQL服务器时,服务器对其进行认证。可以通过用户名和密码的方式进行认证,也可以通过SSL证书进行认证。登录认证通过后,服务器还会验证该客户端是否有执行某个查询的权限。</p>
+<h4 id="2服务器">2.服务器</h4>
+<p>第二层架构是MySQL比较有意思的部分。大多数MySQL的核心服务功能都在这一层,包括查询解析、分析、优化、缓存以及所有的内置函数（例如,日期、时间、数学和加密函数）,所有跨存储引擎的功能都在这一层实现：存储过程、触发器、视图等。</p>
+<ol>
+<li>连接/线程处理</li>
+<li>查询缓存</li>
+<li>解析器</li>
+<li>优化器</li>
+</ol>
+<h4 id="3存储引擎">3.存储引擎</h4>
+<p>第三层包含了存储引擎。存储引擎负责MySQL中数据的存储和提取。和GNU/Linux下的各种文件系统一样,每个存储引擎都有它的优势和劣势。服务器通过API与存储引擎进行通信。这些接口屏蔽了不同存储引擎之间的差异,使得这些差异对上层的查询过程透明。存储引擎API包含几十个底层函数,用于执行诸如“开始一个事务”或者“根据主键提取一行记录”等操作。但存储引擎不会去解析SQL(1),不同存储引擎之间也不会相互通信,而只是简单地响应上层服务器的请求。</p>
+<h5 id="执行与优化过程">执行与优化过程</h5>
+<ol>
+<li>解析查询</li>
+<li>创建内部数据结构（解析树）</li>
+<li>重写查询</li>
+<li>决定表的读取顺序</li>
+<li>选择合适的索引</li>
+</ol>
+<blockquote>
+<p>对其进行各种优化,用户可以通过特殊的关键字提示（hint）优化器,影响它的决策过程。也可以请求优化器解释（explain）优化过程的各个因素</p>
+</blockquote>
+<h2 id="二并发控制">二、并发控制</h2>
+<h4 id="1读写锁">1.读写锁</h4>
+<h5 id="共享锁shared-lock也叫读锁read-lock">共享锁（shared lock）,也叫读锁（read lock）</h5>
+<p>读锁是共享的,或者说是相互不阻塞的。多个客户在同一时刻可以同时读取同一个资源,而互不干扰。</p>
+<h5 id="写锁write-lock也叫排他锁exclusive-lock">写锁（write lock）,也叫排他锁（exclusive lock）</h5>
+<p>写锁则是排他的,也就是说一个写锁会阻塞其他的写锁和读锁,这是出于安全策略的考虑,只有这样,才能确保在给定的时间里,只有一个用户能执行写入,并防止其他用户读取正在写入的同一资源。</p>
+<h4 id="2锁粒度">2.锁粒度</h4>
+<h5 id="表锁table-lock">表锁（table lock）</h5>
+<p>表锁是MySQL中最基本的锁策略,并且是开销最小的策略。表锁非常类似于前文描述的邮箱加锁机制：它会锁定整张表。一个用户在对表进行写操作（插入、删除、更新等）前,需要先获得写锁,这会阻塞其他用户对该表的所有读写操作。只有没有写锁时,其他读取的用户才能获得读锁,读锁之间是不相互阻塞的。</p>
+<h5 id="行级锁row-lock">行级锁（row lock）</h5>
+<p>行级锁可以最大程度地支持并发处理（同时也带来了最大的锁开销）。众所周知,在InnoDB和XtraDB,以及其他一些存储引擎中实现了行级锁。行级锁只在存储引擎层实现,而 MySQL 服务器层没有实现。服务器层完全不了解存储引擎中的锁实现。</p>
+<h2 id="三事物">三、事物</h2>
+<h4 id="1acid-特性">1.ACID 特性</h4>
+<h5 id="原子性atomicity">原子性（atomicity）</h5>
+<p>一个事务必须被视为一个不可分割的最小工作单元,整个事务中的所有操作要么全部提交成功,要么全部失败回滚,对于一个事务来说,不可能只执行其中的一部分操作,这就是事务的原子性。</p>
+<h5 id="一致性consistency">一致性（consistency）</h5>
+<p>数据库总是从一个一致性的状态转换到另外一个一致性的状态。在前面的例子中,一致性确保了,即使在执行第三、四条语句之间时系统崩溃,支票账户中也不会损失200美元,因为事务最终没有提交,所以事务中所做的修改也不会保存到数据库中。</p>
+<h5 id="隔离性isolation">隔离性（isolation）</h5>
+<p>通常来说,一个事务所做的修改在最终提交以前,对其他事务是不可见的。在前面的例子中,当执行完第三条语句、第四条语句还未开始时,此时有另外一个账户汇总程序开始运行,则其看到的支票账户的余额并没有被减去200美元。后面我们讨论隔离级别（Isolation level）的时候,会发现为什么我们要说“通常来说”是不可见的。</p>
+<h5 id="持久性durability">持久性（durability）</h5>
+<p>一旦事务提交,则其所做的修改就会永久保存到数据库中。此时即使系统崩溃,修改的数据也不会丢失。持久性是个有点模糊的概念,因为实际上持久性也分很多不同的级别。有些持久性策略能够提供非常强的安全保障,而有些则未必。而且不可能有能做到100％的持久性保证的策略（如果数据库本身就能做到真正的持久性,那么备份又怎么能增加持久性呢？）。在后面的一些章节中,我们会继续讨论MySQL中持久性的真正含义。</p>
+<h4 id="2隔离级别">2.隔离级别</h4>
+<h5 id="read-uncommitted未提交读">READ UNCOMMITTED（未提交读）</h5>
+<p>在READ UNCOMMITTED级别,事务中的修改,即使没有提交,对其他事务也都是可见的。事务可以读取未提交的数据,这也被称为脏读（Dirty Read）。这个级别会导致很多问题,从性能上来说,READ UNCOMMITTED不会比其他的级别好太多,但却缺乏其他级别的很多好处,除非真的有非常必要的理由,在实际应用中一般很少使用。</p>
+<h5 id="read-committed提交读">READ COMMITTED（提交读）</h5>
+<p>大多数数据库系统的默认隔离级别都是READ COMMITTED（但MySQL不是）。READ COMMITTED满足前面提到的隔离性的简单定义：一个事务开始时,只能“看见”已经提交的事务所做的修改。换句话说,一个事务从开始直到提交之前,所做的任何修改对其他事务都是不可见的。这个级别有时候也叫做不可重复读（nonrepeatable read）,因为两次执行同样的查询,可能会得到不一样的结果。</p>
+<h5 id="repeatable-read可重复读">REPEATABLE READ（可重复读）</h5>
+<p>REPEATABLE READ解决了脏读的问题。该级别保证了在同一个事务中多次读取同样记录的结果是一致的。但是理论上,可重复读隔离级别还是无法解决另外一个幻读（Phantom Read）的问题。所谓幻读,指的是当某个事务在读取某个范围内的记录时,另外一个事务又在该范围内插入了新的记录,当之前的事务再次读取该范围的记录时,会产生幻行（Phantom Row）。InnoDB和XtraDB存储引擎通过多版本并发控制（MVCC,Multiversion Concurrency Control）解决了幻读的问题。本章稍后会做进一步的讨论。</p>
+<blockquote>
+<p>可重复读是MySQL的默认事务隔离级别</p>
+</blockquote>
+<h5 id="serializable可串行化">SERIALIZABLE（可串行化）</h5>
+<p>SERIALIZABLE是最高的隔离级别。它通过强制事务串行执行,避免了前面说的幻读的问题。简单来说,SERIALIZABLE会在读取的每一行数据上都加锁,所以可能导致大量的超时和锁争用的问题。实际应用中也很少用到这个隔离级别,只有在非常需要确保数据的一致性而且可以接受没有并发的情况下,才考虑采用该级别。</p>
+<h4 id="3死锁">3.死锁</h4>
+<h5 id="死锁的产生有双重原因">死锁的产生有双重原因</h5>
+<ol>
+<li>有些是因为真正的数据冲突</li>
+<li>有些则完全是由于存储引擎的实现方式导致的</li>
+</ol>
+<h5 id="系统的解决办法">系统的解决办法</h5>
+<p>InnoDB目前处理死锁的方法是,将持有最少行级排他锁的事务进行回滚（这是相对比较简单的死锁回滚算法）。</p>
+<ol>
+<li><strong>超时机制</strong></li>
+</ol>
+<p>就是当查询的时间达到锁等待超时的设定后放弃锁请求,这种方式通常来说不太好。</p>
+<ol>
+<li><strong>死锁检测</strong></li>
+</ol>
+<p>比如InnoDB存储引擎,越能检测到死锁的循环依赖,并立即返回一个错误。</p>
+<blockquote>
+<p>死锁发生以后,只有部分或者完全回滚其中一个事务,才能打破死锁。</p>
+</blockquote>
+<h5 id="事务日志">事务日志</h5>
+<ol>
+<li>预写式日志（Write-Ahead Logging）,追加的方式,因此写日志的操作是磁盘上一小块区域内的顺序I/O,而不像随机I/O需要在磁盘的多个地方移动磁头,所以采用事务日志的方式相对来说要快得多。</li>
+<li>写回磁盘</li>
+</ol>
+<h4 id="4mysql中的事务">4.MySQL中的事务</h4>
+<h5 id="事务型的存储引擎">事务型的存储引擎</h5>
+<ul>
+<li>InnoDB</li>
+<li>NDB Cluster</li>
+<li>第三方存储引擎</li>
+</ul>
+<h5 id="自动提交autocommit">自动提交（AUTOCOMMIT）</h5>
+<p>MySQL默认采用自动提交（AUTOCOMMIT）模式。</p>
+<h5 id="隐式和显式锁定">隐式和显式锁定</h5>
+<p><strong>隐式锁定</strong></p>
+<p>在事务执行过程中,随时都可以执行锁定,锁只有在执行COMMIT或者ROLLBACK的时候才会释放,并且所有的锁是在同一时刻被释放。InnoDB会根据隔离级别在需要的时候自动加锁。</p>
+<p><strong>显式锁定</strong></p>
+<p>除了事务中禁用了AUTOCOMMIT,可以使用LOCK TABLES之外,其他任何时候都不要显式地执行LOCK TABLES,不管使用的是什么存储引擎。</p>
+<ul>
+<li>FOR UPDATE</li>
+<li>LOCK TABLES</li>
+</ul>
+<h2 id="四多版本并发控制mvcc">四、多版本并发控制（MVCC）</h2>
+<h4 id="1两种实现原理">1.两种实现原理</h4>
+<p>通过保存数据在某个时间点的快照来实现的</p>
+<ul>
+<li>乐观（optimistic）并发控制</li>
+<li>悲观（pessimistic）并发控制</li>
+</ul>
+<h4 id="2innodb的mvcc的实现原理">2.InnoDB的MVCC的实现原理</h4>
+<p>通过在每行记录后面保存两个隐藏的列来实现的</p>
+<ul>
+<li>行的创建时间</li>
+<li>行的过期时间（或删除时间）</li>
+</ul>
+<blockquote>
+<p>当然存储的并不是实际的时间值,而是系统版本号（system version number）。每开始一个新的事务,系统版本号都会自动递增。事务开始时刻的系统版本号会作为事务的版本号,用来和查询到的每行记录的版本号进行比较。</p>
+</blockquote>
+<h5 id="select">SELECT</h5>
+<ul>
+<li>只查找版本早于当前事务版本的数据行</li>
+<li>行的删除版本要么未定义,要么大于当前事务版本号</li>
+</ul>
+<h5 id="insert">INSERT</h5>
+<p>为新插入的每一行保存当前系统版本号作为行版本号</p>
+<h5 id="delete">DELETE</h5>
+<p>为删除的每一行保存当前系统版本号作为行删除标识</p>
+<h5 id="update">UPDATE</h5>
+<p>为插入一行新记录,保存当前系统版本号作为行版本号,同时保存当前系统版本号到原来的行作为行删除标识。</p>
+<blockquote>
+<p>MVCC 只在<code>REPEATABLE READ</code>和<code>READ COMMITTED</code>两个隔离级别下工作。其他两个隔离级别都和 MVCC 不兼容,因为<code>READ UNCOMMITTED</code>总是读取最新的数据行,而不是符合当前事务版本的数据行。而<code>SERIALIZABLE</code>则会对所有读取的行都加锁。</p>
+</blockquote>
+<h2 id="五存储引擎">五、存储引擎</h2>
+<h4 id="1innodb存储引擎事务型的数据库">1.InnoDB存储引擎(事务型的数据库)</h4>
+<p>InnoDB采用MVCC来支持高并发,并且实现了四个标准的隔离级别。其默认级别是REPEATABLE READ（可重复读）,并且通过间隙锁（next-key locking）策略防止幻读的出现。间隙锁使得InnoDB不仅仅锁定查询涉及的行,还会对索引中的间隙进行锁定,以防止幻影行的插入。</p>
+<ul>
+<li>从磁盘读取数据时采用的可预测性预读</li>
+<li>加速插入操作的插入缓冲区（insert buffer）</li>
+<li>索引
+<ul>
+<li>基于聚簇索引,聚簇索引对主键查询有很高的性能。</li>
+<li>二级索引,二级索引（secondary index,非主键索引）中必须包含主键列,所以如果主键列很大的话,其他的所有索引都会很大。因此,若表上的索引较多的话,主键应当尽可能的小。</li>
+<li>自适应哈希索引,能够自动在内存中创建hash索引以加速读操作。</li>
+</ul>
+</li>
+</ul>
+<h4 id="2myisam存储引擎非事务型的数据库">2.MyISAM存储引擎(非事务型的数据库)</h4>
+<p>MyISAM提供了大量的特性,包括全文索引、压缩、空间函数（GIS）等,但MyISAM不支持事务和行级锁,而且有一个毫无疑问的缺陷就是崩溃后无法安全恢复。</p>
+<h4 id="3archive引擎非事务型的数据库">3.Archive引擎(非事务型的数据库)</h4>
+<p>Archive存储引擎只支持INSERT和SELECT操作,在MySQL 5.1之前也不支持索引。Archive引擎会缓存所有的写并利用zlib对插入的行进行压缩,所以比MyISAM表的磁盘I/O更少。但是每次SELECT查询都需要执行全表扫描。所以Archive表适合日志和数据采集类应用,这类应用做数据分析时往往需要全表扫描。或者在一些需要更快速的INSERT操作的场合下也可以使用。Archive引擎支持行级锁和专用的缓冲区,所以可以实现高并发的插入。在一个查询开始直到返回表中存在的所有行数之前,Archive引擎会阻止其他的SELECT执行,以实现一致性读。另外,也实现了批量插入在完成之前对读操作是不可见的。这种机制模仿了事务和MVCC的一些特性,但Archive引擎不是一个事务型的引擎,而是一个针对高速插入和压缩做了优化的简单引擎。</p>
+<h4 id="4blackhole引擎">4.Blackhole引擎</h4>
+<p>Blackhole引擎没有实现任何的存储机制,它会丢弃所有插入的数据,不做任何保存。但是服务器会记录Blackhole表的日志,所以可以用于复制数据到备库,或者只是简单地记录到日志。这种特殊的存储引擎可以在一些特殊的复制架构和日志审核时发挥作用。但这种应用方式我们碰到过很多问题,因此并不推荐。</p>
+<h4 id="5csv引擎">5.CSV引擎</h4>
+<p>CSV引擎可以将普通的CSV文件（逗号分割值的文件）作为MySQL的表来处理,但这种表不支持索引。CSV引擎可以在数据库运行时拷入或者拷出文件。可以将Excel等电子表格软件中的数据存储为CSV文件,然后复制到MySQL数据目录下,就能在MySQL中打开使用。同样,如果将数据写入到一个CSV引擎表,其他的外部程序也能立即从表的数据文件中读取CSV格式的数据。因此CSV引擎可以作为一种数据交换的机制,非常有用。</p>
+<h4 id="6federated引擎">6.Federated引擎</h4>
+<p>Federated引擎是访问其他MySQL服务器的一个代理,它会创建一个到远程MySQL服务器的客户端连接,并将查询传输到远程服务器执行,然后提取或者发送需要的数据。最初设计该存储引擎是为了和企业级数据库如Microsoft SQL Server和Oracle的类似特性竞争的,可以说更多的是一种市场行为。尽管该引擎看起来提供了一种很好的跨服务器的灵活性,但也经常带来问题,因此默认是禁用的。MariaDB使用了它的一个后续改进版本,叫做FederatedX。</p>
+<h4 id="7memory引擎">7.Memory引擎</h4>
+<h5 id="应用场景">应用场景</h5>
+<ul>
+<li>用于查找（lookup）或者映射（mapping）表</li>
+<li>用于缓存周期性聚合数据（periodically aggregated data）的结果</li>
+<li>用于保存数据分析中产生的中间数据</li>
+</ul>
+<h5 id="锁粒度">锁粒度</h5>
+<p>使用表锁（table lock,表锁是MySQL中最基本的锁策略,并且是开销最小的策略。表锁非常类似于前文描述的邮箱加锁机制：它会锁定整张表。一个用户在对表进行写操作（插入、删除、更新等）前,需要先获得写锁,这会阻塞其他用户对该表的所有读写操作。只有没有写锁时,其他读取的用户才能获得读锁,读锁之间是不相互阻塞的。</p>
+<h5 id="缺点">缺点</h5>
+<ul>
+<li>并发写入的性能较低</li>
+<li>不支持BLOB或TEXT类型的列,并且每行的长度是固定的</li>
+</ul>
+<h4 id="8ndb集群引擎">8.NDB集群引擎</h4>
+<p><strong>TODO</strong></p>
+<h4 id="9merge引擎">9.Merge引擎</h4>
+<p>Merge表是由多个MyISAM表合并而来的虚拟表。如果将MySQL用于日志或者数据仓库类应用,该引擎可以发挥作用。但是引入分区功能后,该引擎已经被放弃</p>
+<h4 id="10第三方存储引擎">10.第三方存储引擎</h4>
+<p><strong>TODO</strong></p>
+<blockquote>
+<p><a href="https://www.ulovecode.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/">https://www.ulovecode.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/</a></p>
+</blockquote>
+
+        </div>
+
+        
+<div class="post-archive">
+    <ul class="post-copyright">
+        <li><strong>原文作者：</strong><a rel="author" href="https://https://isaacrolo.github.io/">Rolo</a></li>
+        <li style="word-break:break-all"><strong>原文链接：</strong><a href="https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/">https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/</a></li>
+        <li><strong>版权声明：</strong>本作品采用<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a>进行许可，非商业转载请注明出处（作者，原文链接），商业转载请联系作者获得授权。</li>
+    </ul>
+</div>
+<br/>
+
+
+
+        
+
+<div class="post-archive">
+    <h2>See Also</h2>
+    <ul class="listing">
+        
+        <li><a href="/isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/">高性能 MySQL ｜ Schema 与数据类型优化</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/">高性能 MySQL ｜ 创建高性能的索引</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">高性能 MySQL ｜ 查询性能优化</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/16s/">魅族16s使用半年有感</a></li>
+        
+        <li><a href="/isaacrolo.github.io/post/SQLInjection/">关于防止sql注入的思考</a></li>
+        
+    </ul>
+</div>
+
+
+        <div class="post-meta meta-tags">
+            
+            <ul class="clearfix">
+                
+                <li><a href='/isaacrolo.github.io/tags/MySQL'>MySQL </a></li>
+                
+            </ul>
+            
+        </div>
+    </article>
+    
+    
+
+    
+    
+</div>
+
+                    <footer id="footer">
+    <div>
+        &copy; 2021 <a href="https://https://isaacrolo.github.io/">Rolo的日常 By Rolo</a>
+        
+    </div>
+    <br />
+    <div>
+        <div class="github-badge">
+            <a href="https://gohugo.io/" target="_black" rel="nofollow"><span class="badge-subject">Powered by</span><span class="badge-value bg-blue">Hugo</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://www.flysnow.org/" target="_black"><span class="badge-subject">Design by</span><span class="badge-value bg-brightgreen">飞雪无情</span></a>
+        </div>
+        <div class="github-badge">
+            <a href="https://github.com/flysnow-org/maupassant-hugo" target="_black"><span class="badge-subject">Theme</span><span class="badge-value bg-yellowgreen">Maupassant</span></a>
+        </div>
+    </div>
+</footer>
+
+
+    
+    <script type="text/javascript">
+        window.MathJax = {
+            tex2jax: {
+                inlineMath: [['$', '$']],
+                processEscapes: true
+                }
+            };
+    </script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+<a id="rocket" href="#top"></a>
+<script type="text/javascript" src='/isaacrolo.github.io/js/totop.js?v=0.0.0' async=""></script>
+
+
+
+    <script type="text/javascript" src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+
+
+
+
+    <script src='/isaacrolo.github.io/js/douban.js'></script>
+
+                </div>
+
+                <div id="secondary">
+    <section class="widget">
+        <form id="search" action='https://https:/isaacrolo.github.io/search/' method="get" accept-charset="utf-8" target="_blank" _lpchecked="1">
+      
+      <input type="text" name="q" maxlength="20" placeholder="Search">
+      <input type="hidden" name="sitesearch" value="https://https://isaacrolo.github.io/">
+      <button type="submit" class="submit icon-search"></button>
+</form>
+    </section>
+    
+    <section class="widget">
+        <h3 class="widget-title">最近文章</h3>
+<ul class="widget-list">
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E4%B8%8E%E4%BC%98%E5%8C%96/" title="Mysql索引原理与优化">Mysql索引原理与优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E5%8C%BA%E5%9D%97%E9%93%BE%E5%85%A5%E9%97%A8/" title="区块链入门">区块链入门</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/work-tips/" title="一份工作中最重要的5个要素">一份工作中最重要的5个要素</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Mysql%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84/" title="高性能 MySQL ｜ MySQL 逻辑架构">高性能 MySQL ｜ MySQL 逻辑架构</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Schema%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ Schema 与数据类型优化">高性能 MySQL ｜ Schema 与数据类型优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E9%AB%98%E6%80%A7%E8%83%BD%E7%B4%A2%E5%BC%95/" title="高性能 MySQL ｜ 创建高性能的索引">高性能 MySQL ｜ 创建高性能的索引</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/%E6%9F%A5%E8%AF%A2%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/" title="高性能 MySQL ｜ 查询性能优化">高性能 MySQL ｜ 查询性能优化</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/16s/" title="魅族16s使用半年有感">魅族16s使用半年有感</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/SQLInjection/" title="关于防止sql注入的思考">关于防止sql注入的思考</a>
+    </li>
+    
+    <li>
+        <a href="https://https://isaacrolo.github.io/post/Hadoop/" title="Hadoop">Hadoop</a>
+    </li>
+    
+</ul>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/categories/'>分类</a></h3>
+<ul class="widget-list">
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Database/">Database (6)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/Spring-Cloud/">Spring Cloud (2)</a></li>
+    
+    <li><a href="https://https://isaacrolo.github.io/categories/web/">web (1)</a></li>
+    
+</ul>
+    </section>
+
+    <section class="widget">
+        <h3 class="widget-title"><a href='/isaacrolo.github.io/tags/'>标签</a></h3>
+<div class="tagcloud">
+    
+    <a href="https://https://isaacrolo.github.io/tags/BlockChain/">BlockChain</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Elasticsearch/">Elasticsearch</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Java/">Java</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/MySQL/">MySQL </a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Redis/">Redis</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Boot/">Spring Boot</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Spring-Cloud/">Spring Cloud</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/Tableau/">Tableau</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/web/">web</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E6%9D%82%E8%B0%88/">杂谈</a>
+    
+    <a href="https://https://isaacrolo.github.io/tags/%E7%BD%91%E7%BB%9C/">网络</a>
+    
+</div>
+    </section>
+
+    
+
+    <section class="widget">
+        <h3 class="widget-title">其它</h3>
+        <ul class="widget-list">
+            <li><a href="https://https:/isaacrolo.github.io/index.xml">文章 RSS</a></li>
+        </ul>
+    </section>
+</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Spring Boot on Rolo的日常</title>
+    <link>https://https://isaacrolo.github.io/tags/Spring-Boot/</link>
+    <description>Recent content in Spring Boot on Rolo的日常</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Tue, 19 Mar 2019 13:50:30 +0800</lastBuildDate><atom:link href="https://https://isaacrolo.github.io/tags/Spring-Boot/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>SpringBoot 迁移</title>
+      <link>https://https://isaacrolo.github.io/post/springboot-transfer/</link>
+      <pubDate>Tue, 19 Mar 2019 13:50:30 +0800</pubDate>
+      
+      <guid>https://https://isaacrolo.github.io/post/springboot-transfer/</guid>
+      <description>SpringBoot使用jsp作为模板引擎 Maven构建的多module SpringBoot服务打包方式 不应该给 parent 项目添加 spring-boot-maven-plugin 构建插件（该插件会将依赖的jar包都打包进去），而应该给终端项目使用，因为这个插件的 repackage 目标会处理 jar 包，导致依赖它的模块无法使用它。 多模块 Spring Boot 项目 mvn package 失败的解</description>
+    </item>
+    
+  </channel>
+</rss>

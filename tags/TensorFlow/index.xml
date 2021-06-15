@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>TensorFlow on Rolo的日常</title>
+    <link>https://isaacrolo.gitee.io/note/tags/TensorFlow/</link>
+    <description>Recent content in TensorFlow on Rolo的日常</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-CN</language>
+    <lastBuildDate>Tue, 06 Aug 2019 10:22:08 +0800</lastBuildDate><atom:link href="https://isaacrolo.gitee.io/note/tags/TensorFlow/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>TensorFlow入门</title>
+      <link>https://isaacrolo.gitee.io/note/post/TensorFlow/</link>
+      <pubDate>Tue, 06 Aug 2019 10:22:08 +0800</pubDate>
+      
+      <guid>https://isaacrolo.gitee.io/note/post/TensorFlow/</guid>
+      <description>概念 TensorFlow TensorFlow是一个开源软件库，用于各种感知和语言理解任务的机器学习。 机器学习 机器学习是一门人工智能的科学，该领域的主要研究对象是人工智能，特别是如何在经验学习中改善具体算法的性能。 机器学习是对能通过经验自动改进的计算机算法的研究。 机器学习是用数据或以往的经验，以此优</description>
+    </item>
+    
+  </channel>
+</rss>
